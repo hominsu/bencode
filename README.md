@@ -16,7 +16,7 @@
 <h3 align="center">bencode</h3>
 
   <p align="center">
-    JSON parser/generator in C++17
+    Bencode parser/generator in C++17
     <br/>
     <a href="https://me.hauhau.cn/projects/bencode/"><strong>Explore the docs »</strong></a>
     <br/>

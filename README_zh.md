@@ -16,7 +16,7 @@
 <h3 align="center">bencode</h3>
 
   <p align="center">
-    JSON parser/generator in C++17
+    Bencode parser/generator in C++17
     <br/>
     <a href="https://me.hauhau.cn/projects/bencode/"><strong>Explore the docs »</strong></a>
     <br/>
@@ -33,7 +33,7 @@
 
 ## 简介
 
-bencode 是一个 C++ 的 JSON 解析器及生成器。它同时支持 SAX 和 DOM 风格的 API。
+bencode 是一个 C++ 的 Bencode 解析器及生成器。它同时支持 SAX 和 DOM 风格的 API。
 
 ## 安装
 
