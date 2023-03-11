@@ -60,8 +60,6 @@ class Reader : NonCopyable {
   static bool IsDigit1To9(char ch) { return ch >= '1' && ch <= '9'; }
 };
 
-#define CALL(expr) if (!(expr)) throw Exception(error::USER_STOPPED)
-
 template<typename ReadStream, typename Handler>
 inline error::ParseError Reader::Parse(ReadStream &rs, Handler &handler) {
   try {
@@ -72,6 +70,8 @@ inline error::ParseError Reader::Parse(ReadStream &rs, Handler &handler) {
     return e.err();
   }
 }
+
+#define CALL(expr) if (!(expr)) throw Exception(error::USER_STOPPED)
 
 template<typename ReadSteam, typename Handler>
 inline void Reader::ParseInteger(ReadSteam &rs, Handler &handler) {
@@ -195,6 +195,8 @@ inline void Reader::ParseDict(ReadSteam &rs, Handler &handler) {
     }
   }
 }
+
+#undef CALL
 
 template<typename ReadStream, typename Handler>
 inline void Reader::ParseValue(ReadStream &rs, Handler &handler) {

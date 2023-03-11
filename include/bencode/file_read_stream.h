@@ -37,16 +37,13 @@
 namespace bencode {
 
 class FileReadStream : NonCopyable {
- public:
-  using Ch = char;
-
  private:
   static const std::size_t kInnerBufferSize = 256;
   std::FILE *fp_;
-  Ch inner_buffer_[kInnerBufferSize]{};
-  Ch *buffer_;
-  Ch *current_;
-  Ch *buffer_last_;
+  char inner_buffer_[kInnerBufferSize]{};
+  char *buffer_;
+  char *current_;
+  char *buffer_last_;
   std::size_t buffer_size_;
   std::size_t read_count_;
   std::size_t read_total_;
@@ -69,7 +66,7 @@ class FileReadStream : NonCopyable {
   explicit FileReadStream(std::FILE *fp, char *buffer, std::size_t buffer_size)
       : fp_(fp),
         buffer_(buffer),
-        current_(buffer_),
+        current_(buffer),
         buffer_last_(nullptr),
         buffer_size_(buffer_size),
         read_count_(0),
@@ -82,10 +79,10 @@ class FileReadStream : NonCopyable {
 
   [[nodiscard]] bool hasNext() const { return !eof_ || (current_ + 1 - !eof_ <= buffer_last_); }
 
-  Ch peek() { return *current_; }
+  char peek() { return *current_; }
 
-  Ch next() {
-    Ch ch = *current_;
+  char next() {
+    char ch = *current_;
     read();
     return ch;
   }
@@ -99,7 +96,7 @@ class FileReadStream : NonCopyable {
     }
   }
 
-  void assertNext(Ch ch) {
+  void assertNext(char ch) {
     (void) ch;
     BENCODE_ASSERT(peek() == ch);
     read();

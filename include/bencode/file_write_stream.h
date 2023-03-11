@@ -39,19 +39,30 @@ namespace bencode {
 
 class FileWriteStream : NonCopyable {
  private:
-  std::FILE *out_;
+  static const std::size_t kInnerBufferSize = 256;
+  std::FILE *fp_;
+  char inner_buffer_[kInnerBufferSize]{};
   char *buffer_;
   char *buffer_end_;
   char *current_;
 
  public:
-  explicit FileWriteStream(std::FILE *out, char *buffer, std::size_t buffer_size)
-      : out_(out),
+  explicit FileWriteStream(std::FILE *fp)
+      : fp_(fp),
+        buffer_(inner_buffer_),
+        buffer_end_(buffer_ + kInnerBufferSize),
+        current_(buffer_) {
+    BENCODE_ASSERT(fp != nullptr && "FILE pointer equal zero");
+  }
+
+  explicit FileWriteStream(std::FILE *fp, char *buffer, std::size_t buffer_size)
+      : fp_(fp),
         buffer_(buffer),
         buffer_end_(buffer + buffer_size),
         current_(buffer_) {
-    BENCODE_ASSERT(out != nullptr && "FILE pointer equal zero");
+    BENCODE_ASSERT(fp != nullptr && "FILE pointer equal zero");
   }
+
   ~FileWriteStream() { if (current_ != buffer_) { flush(); }}
 
   void put(char ch) {
@@ -66,7 +77,7 @@ class FileWriteStream : NonCopyable {
       current_ += avail;
       flush();
       size -= avail;
-      avail = static_cast<size_t>(buffer_end_ - current_);
+      avail = static_cast<std::size_t>(buffer_end_ - current_);
     }
     if (size > 0) {
       std::memset(current_, ch, size);
@@ -104,7 +115,7 @@ class FileWriteStream : NonCopyable {
       copy += avail;
       flush();
       length -= avail;
-      avail = static_cast<size_t>(buffer_end_ - current_);
+      avail = static_cast<std::size_t>(buffer_end_ - current_);
     }
 
     if (length > 0) {
@@ -115,8 +126,8 @@ class FileWriteStream : NonCopyable {
 
   void flush() {
     if (current_ != buffer_) {
-      size_t result = std::fwrite(buffer_, 1, static_cast<size_t>(current_ - buffer_), out_);
-      if (result < static_cast<size_t>(current_ - buffer_)) {
+      size_t result = std::fwrite(buffer_, 1, static_cast<std::size_t>(current_ - buffer_), fp_);
+      if (result < static_cast<std::size_t>(current_ - buffer_)) {
       }
       current_ = buffer_;
     }

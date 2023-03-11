@@ -57,7 +57,7 @@ enum ParseError {
 };
 } // namespace error
 
-inline const char *parseErrorStr(error::ParseError err) {
+inline const char *ParseErrorStr(error::ParseError err) {
   const static char *err_str_table[] = {
 #define ERR_STR(_err, _str) _str,
       ERR_TABLE(ERR_STR)
@@ -68,6 +68,8 @@ inline const char *parseErrorStr(error::ParseError err) {
   return err_str_table[err];
 }
 
+#undef ERR_TABLE
+
 class Exception : public std::exception {
  private:
   error::ParseError err_;
@@ -75,7 +77,7 @@ class Exception : public std::exception {
  public:
   explicit Exception(error::ParseError err) : err_(err) {}
 
-  [[nodiscard]] const char *what() const noexcept override { return parseErrorStr(err_); }
+  [[nodiscard]] const char *what() const noexcept override { return ParseErrorStr(err_); }
   [[nodiscard]] error::ParseError err() const { return err_; }
 };
 

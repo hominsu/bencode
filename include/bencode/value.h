@@ -352,6 +352,8 @@ inline bool Value::WriteTo(Handler &handler) const {
   return true;
 }
 
+#undef CALL_HANDLER
+
 } // namespace bencode
 
 #endif //BENCODE_INCLUDE_BENCODE_VALUE_H_
