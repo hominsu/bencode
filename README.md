@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
   bencode::Document doc;
   auto err = doc.Parse(kSample[0]);
   if (err != bencode::error::OK) {
-    puts(bencode::parseErrorStr(err));
+    puts(bencode::ParseErrorStr(err));
     return EXIT_FAILURE;
   }
 
