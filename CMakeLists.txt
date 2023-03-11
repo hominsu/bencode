@@ -19,16 +19,17 @@ else ()
     PROJECT(bencode VERSION "${LIB_VERSION_STRING}" LANGUAGES C CXX)
 endif ()
 
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+get_filename_component(DEPS_ROOT "${PROJECT_BINARY_DIR}/deps" ABSOLUTE)
+include(ExtProjectUtils)
+
 # compile in release with debug info mode by default
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif ()
 
-# Build all binaries in a separate directory
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 option(BENCODE_BUILD_EXAMPLES "Build bencode examples." ON)
-option(BENCODE_BUILD_TESTS "Build bencode unittests." OFF)
+option(BENCODE_BUILD_TESTS "Build bencode unittests." ON)
 
 option(BENCODE_ENABLE_INSTRUMENTATION_OPT "Build bencode with -march or -mcpu options" ON)
 option(BENCODE_BUILD_ASAN "Build bencode with address sanitizer (gcc/clang)" OFF)
@@ -121,26 +122,45 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "XL")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qarch=auto")
 endif ()
 
-
+# include bencode
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 #add extra search paths for libraries and includes
 SET(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "The directory the headers are installed in")
 SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE STRING "Directory where lib will install")
 
+if (BENCODE_BUILD_EXAMPLES OR BENCODE_BUILD_TESTS)
+    include_directories("${DEPS_ROOT}/include")
+    link_directories("${DEPS_ROOT}/lib")
+    link_directories("${DEPS_ROOT}/lib64")
+endif ()
 
+# example
 if (BENCODE_BUILD_EXAMPLES)
+    find_package(neujson)
+    include_directories(${neujson_INCLUDE_DIRS})
     add_subdirectory(example)
 endif ()
 
+# tests
 if (BENCODE_BUILD_TESTS)
     if (MSVC11)
         # required for VS2012 due to missing support for variadic templates
         add_definitions(-D_VARIADIC_MAX=10)
     endif (MSVC11)
-    add_subdirectory(third_party/gtest)
-    add_subdirectory(test)
-endif (BENCODE_BUILD_TESTS)
+    # This also will create "googletest.git" target, which we'll use as dependency for our test project
+    ExtProjectGit("https://github.com/google/googletest.git" "v1.13.0" ${DEPS_ROOT} CMAKE_ARGS "${_OPT_CMAKE_ARGS}")
+    enable_testing()
+    file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cc)
+    foreach (_test_file ${TEST_SRC_FILES})
+        get_filename_component(_test_name ${_test_file} NAME_WE)
+        add_executable(${_test_name} ${_test_file})
+        add_dependencies(${_test_name} "googletest.git")
+        target_link_libraries(${_test_name} gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+        add_test(${_test_name} ${_test_name})
+        set_tests_properties(${_test_name} PROPERTIES TIMEOUT 5)
+    endforeach ()
+endif ()
 
 # header
 install(DIRECTORY include/bencode
@@ -148,26 +168,50 @@ install(DIRECTORY include/bencode
         COMPONENT dev)
 
 # cmake
-IF (UNIX OR CYGWIN)
-    SET(_CMAKE_INSTALL_DIR "${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME}")
-ELSEIF (WIN32)
-    SET(_CMAKE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/cmake")
-ENDIF ()
-SET(CMAKE_INSTALL_DIR "${_CMAKE_INSTALL_DIR}" CACHE PATH "The directory cmake files are installed in")
+if (UNIX OR CYGWIN)
+    set(_CMAKE_INSTALL_DIR "${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME}")
+elseif (WIN32)
+    set(_CMAKE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/cmake")
+endif ()
+set(CMAKE_INSTALL_DIR "${_CMAKE_INSTALL_DIR}" CACHE PATH "The directory cmake files are installed in")
 
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-        "${PROJECT_NAME}ConfigVersion.cmake"
-        VERSION ${PACKAGE_VERSION}
-        COMPATIBILITY AnyNewerVersion)
+export(PACKAGE ${PROJECT_NAME})
+
+set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(CONFIG_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set(${PROJECT_NAME}_INCLUDE_DIR "\${${PROJECT_NAME}_SOURCE_DIR}/include")
+
 configure_file(
-        "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
         @ONLY)
-install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}ConfigVersion.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-        DESTINATION ${CMAKE_INSTALL_DIR})
+        @ONLY)
+
+set(CMAKECONFIG_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME})
+file(RELATIVE_PATH REL_INCLUDE_DIR
+        "${CMAKECONFIG_INSTALL_DIR}"
+        "${CMAKE_INSTALL_PREFIX}/include")
+set(${PROJECT_NAME}_INCLUDE_DIR "\${${PROJECT_NAME}_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+set(CONFIG_SOURCE_DIR)
+set(CONFIG_DIR)
+configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        @ONLY)
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+
+if (CMAKE_INSTALL_DIR)
+    install(FILES
+            ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+            DESTINATION "${CMAKE_INSTALL_DIR}"
+            COMPONENT dev)
+endif ()
 
 # pkg-config
 IF (UNIX OR CYGWIN)

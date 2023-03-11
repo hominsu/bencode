@@ -9,6 +9,7 @@ set(EXAMPLES
         document
         file
         parse
+        sax
         stream_wrapper
         struct)
 

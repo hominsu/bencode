@@ -1,4 +1,14 @@
-include(CMakeFindDependencyMacro)
+cmake_minimum_required(VERSION 3.0)
+set( bencode_SOURCE_DIR "@CONFIG_SOURCE_DIR@")
+set( bencode_DIR "@CONFIG_DIR@")
+get_filename_component(bencode_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
-# Add the targets file
-include("${CMAKE_CURRENT_LIST_DIR}/bencodeTargets.cmake")
+set( bencode_INCLUDE_DIR  "@bencode_INCLUDE_DIR@" )
+set( bencode_INCLUDE_DIRS  "@bencode_INCLUDE_DIR@" )
+message(STATUS "bencode found. Headers: ${bencode_INCLUDE_DIRS}")
+
+if(NOT TARGET bencode)
+    add_library(bencode INTERFACE IMPORTED)
+    set_property(TARGET bencode PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${bencode_INCLUDE_DIRS})
+endif()
