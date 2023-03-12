@@ -5,19 +5,19 @@ on:
     tags: [ 'v*.*.*' ]
 
 jobs:
-  resolve-registry:
+  set-matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.resolve-registry.outputs.matrix }}
-      tag: ${{ steps.git_info.outputs.tag }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      git_tag: ${{ steps.git_info.outputs.tag }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
 
-      - id: resolve-registry
+      - id: set-matrix
         run: |
-          JSON=$(cat .github/workflows/repo-setting.json | tr '\n' ' ' | sed 's/ //g')
+          JSON=$(cat .github/workflows/registry.json | tr '\n' ' ' | sed 's/ //g')
           echo "::set-output name=matrix::$JSON"
 
       - id: git_info
@@ -25,16 +25,17 @@ jobs:
           tag=$(echo ${{ github.ref }} | rev | cut -d/ -f1 | rev)
           echo "::set-output name=tag::$tag"
 
-  docker:
+  build:
     runs-on: ubuntu-latest
-    needs: [ resolve-registry ]
+    needs: [ set-matrix ]
     strategy:
-      matrix: ${{fromJSON(needs.resolve-registry.outputs.matrix)}}
-      alpine: [ 3.16, 3.17 ]
+      matrix:
+        registry: ${{fromJSON(needs.set-matrix.outputs.matrix)}}
+        alpine: [ 3.16, 3.17 ]
 
     env:
-      id: ${{ secrets[matrix.id] }}
-      token: ${{ secrets[matrix.token] }}
+      id: ${{ secrets[matrix.registry.id] }}
+      token: ${{ secrets[matrix.registry.token] }}
 
     permissions:
       contents: read
@@ -44,10 +45,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Log into Registry ${{ matrix.name }}
+      - name: Log into Registry ${{ matrix.registry.name }}
         uses: docker/login-action@v2
         with:
-          registry: ${{ matrix.register }}
+          registry: ${{ matrix.registry.registry }}
           username: ${{ env.id }}
           password: ${{ env.token }}
 
@@ -61,13 +62,13 @@ jobs:
         with:
           install: true
 
-      - name: Build and Push ${{ matrix.name }}
+      - name: Build and Push ${{ matrix.registry.name }}
         run: |
-          REPO=${{ matrix.push_link }} VERSION=${{ needs.resolve-registry.outputs.tag }} docker buildx bake --file docker/docker-bake.hcl --push
+          REPO=${{ matrix.registry.push_link }} ALPINE_VERSION=${{ matrix.alpine }} VERSION=${{ needs.set-matrix.outputs.git_tag }} docker buildx bake --file docker/docker-bake.hcl --push --set "*.platform=linux/arm64,linux/amd64,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6"
 
   release:
     runs-on: ubuntu-latest
-    needs: [ docker ]
+    needs: [ build ]
 
     permissions:
       contents: write
