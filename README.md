@@ -253,10 +253,10 @@ With th CMake build types, you can control whether examples and tests are built.
 
 ```bash
 cmake -H. -Bbuild \
-					-DCMAKE_BUILD_TYPE=Release \
-					-DCMAKE_INSTALL_PREFIX=/Users/hominsu/utils/install \
-					-DNEUJSON_BUILD_EXAMPLES=ON \
-					-DNEUJSON_BUILD_TESTS=ON
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=/Users/hominsu/utils/install \
+	-DNEUJSON_BUILD_EXAMPLES=ON \
+	-DNEUJSON_BUILD_TESTS=ON
 cmake --build ./build --parallel $(nproc)
 ctest -VV --test-dir ./build/ --output-on-failure
 cmake --install ./build
@@ -266,8 +266,8 @@ Or just installed as a CMake package.
 
 ```bash
 cmake -H. -Bbuild \
-					-DNEUJSON_BUILD_EXAMPLES=OFF \
-					-DNEUJSON_BUILD_TESTS=OFF
+	-DNEUJSON_BUILD_EXAMPLES=OFF \
+	-DNEUJSON_BUILD_TESTS=OFF
 cmake --install ./build
 ```
 
