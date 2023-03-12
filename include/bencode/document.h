@@ -27,6 +27,8 @@
 #ifndef BENCODE_INCLUDE_BENCODE_DOCUMENT_H_
 #define BENCODE_INCLUDE_BENCODE_DOCUMENT_H_
 
+#include <cstdint>
+
 #include <string_view>
 #include <variant>
 #include <vector>

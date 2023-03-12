@@ -27,6 +27,7 @@
 #ifndef BENCODE_INCLUDE_BENCODE_VALUE_H_
 #define BENCODE_INCLUDE_BENCODE_VALUE_H_
 
+#include <cstdint>
 #include <cstring>
 
 #include <algorithm>

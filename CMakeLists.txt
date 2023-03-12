@@ -28,8 +28,8 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif ()
 
-option(BENCODE_BUILD_EXAMPLES "Build bencode examples." ON)
-option(BENCODE_BUILD_TESTS "Build bencode unittests." ON)
+option(BENCODE_BUILD_EXAMPLES "Build bencode examples." OFF)
+option(BENCODE_BUILD_TESTS "Build bencode unittests." OFF)
 
 option(BENCODE_ENABLE_INSTRUMENTATION_OPT "Build bencode with -march or -mcpu options" ON)
 option(BENCODE_BUILD_ASAN "Build bencode with address sanitizer (gcc/clang)" OFF)

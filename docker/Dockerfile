@@ -7,14 +7,14 @@ RUN apk add --no-cache git build-base cmake
 COPY . /src
 WORKDIR /src
 RUN cmake -H. -Bbuild \
-    -DCMAKE_BUILD_TYPE=Releasec \
+    -DCMAKE_BUILD_TYPE=Release \
     -DBENCODE_BUILD_EXAMPLES=ON \
     -DBENCODE_BUILD_TESTS=ON \
     -DBENCODE_ENABLE_INSTRUMENTATION_OPT=OFF \
     -DBENCODE_BUILD_ASAN=OFF \
     -DBENCODE_BUILD_UBSAN=OFF && \
     cmake --build ./build --parallel $(nproc) && \
-    GTEST_COLOR=TRUE ctest --test-dir ./build/test --output-on-failure && \
+    GTEST_COLOR=TRUE ctest --test-dir ./build/ --output-on-failure && \
     cmake --install ./build
 
 # final stage

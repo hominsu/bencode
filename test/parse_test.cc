@@ -24,6 +24,8 @@
 // Created by Homin Su on 2023/3/10.
 //
 
+#include <cstdint>
+
 #include "bencode/bencode.h"
 #include "bencode/document.h"
 #include "bencode/exception.h"

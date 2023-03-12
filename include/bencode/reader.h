@@ -27,6 +27,8 @@
 #ifndef BENCODE_INCLUDE_BENCODE_READER_H_
 #define BENCODE_INCLUDE_BENCODE_READER_H_
 
+#include <cstdint>
+
 #include <string>
 
 #include "exception.h"
