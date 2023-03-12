@@ -30,7 +30,21 @@
 #include <string_view>
 
 constexpr std::string_view kSample[] = {
-    R"(d8:announce41:http://bttracker.debian.org:6969/announce7:comment35:"Debian CD from cdimage.debian.org"10:created by13:mktorrent 1.113:creation datei1671279452e4:infod6:lengthi3909091328e4:name29:debian-11.6.0-amd64-DVD-1.iso12:piece lengthi262144e6:pieces41:(binary blob of the hashes of each piece)ee)"
+    R"bencode(d8:announce41:http://bttracker.debian.org:6969/announce7:comment35:"Debian CD from cdimage.debian.org"10:created by13:mktorrent 1.113:creation datei1671279452e4:infod6:lengthi3909091328e4:name29:debian-11.6.0-amd64-DVD-1.iso12:piece lengthi262144e6:pieces41:(binary blob of the hashes of each piece)ee)bencode",
+    R"json(
+{
+  "announce": "http://bttracker.debian.org:6969/announce",
+  "comment": "\"Debian CD from cdimage.debian.org\"",
+  "created by": "mktorrent 1.1",
+  "creation date": 1671279452,
+  "info": {
+    "length": 3909091328,
+    "name": "debian-11.6.0-amd64-DVD-1.iso",
+    "piece length": 262144,
+    "pieces": "(binary blob of the hashes of each piece)"
+  }
+}
+)json"
 };
 
 #endif //BENCODE_EXAMPLE_SAMPLE_H_

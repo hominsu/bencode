@@ -28,8 +28,8 @@
 #include <string_view>
 
 #include "bencode/non_copyable.h"
-#include "bencode/string_read_stream.h"
 #include "bencode/reader.h"
+#include "bencode/string_read_stream.h"
 #include "sample.h"
 
 #include "neujson/file_write_stream.h"
@@ -59,8 +59,7 @@ int main(int argc, char *argv[]) {
 
   bencode::StringReadStream in(kSample[0]);
 
-  char writeBuffer[65536];
-  neujson::FileWriteStream out(stdout, writeBuffer, sizeof(writeBuffer));
+  neujson::FileWriteStream out(stdout);
   neujson::PrettyWriter pretty_writer(out);
   pretty_writer.SetIndent(' ', 2);
   BencodeToJSON to_json(pretty_writer);
