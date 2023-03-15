@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
 
   // 3. Stringify the DOM
   bencode::StringWriteStream os;
-  bencode::Writer<bencode::StringWriteStream> writer(os);
+  bencode::Writer writer(os);
   doc.WriteTo(writer);
 
   // Output
@@ -95,7 +95,7 @@ d8:announce41:http://bttracker.debian.org:6969/announce7:comment35:"Debian CD fr
 
 ### Conversion between Bencode and JSON
 
-Due to the excellent design of bencode library, the bencode library can be easily combined with [neujson](https://github.com/hominsu/neujson) to achieve the mutual conversion of JSON and Bencode.
+Due to the excellent design of bencode library, the bencode library can be easily combined with [neujson](https://github.com/hominsu/neujson) to achieve the mutual conversion of JSON and Bencode. Also, this is an example of SAX. Unlike DOM, SAX does not store data into memory, but writes directly from the input stream to the output stream
 
 #### Bencode to JSON
 
@@ -237,7 +237,7 @@ d8:announce41:http://bttracker.debian.org:6969/announce7:comment35:"Debian CD fr
 
 ## Building
 
-This project requires C++17.
+This project requires C++17. This library uses following projects：
 
 When building tests:
 
