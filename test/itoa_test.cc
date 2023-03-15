@@ -37,52 +37,50 @@ BENCODE_DIAG_PUSH
 BENCODE_DIAG_OFF(stringop-overflow)
 #endif
 
-template <typename T>
-struct Traits {
-};
+template<typename T>
+struct Traits {};
 
-template <>
+template<>
 struct Traits<uint32_t> {
   enum { kBufferSize = 11 };
   enum { kMaxDigit = 10 };
   static uint32_t Negate(uint32_t x) { return x; }
 };
 
-template <>
+template<>
 struct Traits<int32_t> {
   enum { kBufferSize = 12 };
   enum { kMaxDigit = 10 };
   static int32_t Negate(int32_t x) { return -x; }
 };
 
-template <>
+template<>
 struct Traits<uint64_t> {
   enum { kBufferSize = 21 };
   enum { kMaxDigit = 20 };
   static uint64_t Negate(uint64_t x) { return x; }
 };
 
-template <>
+template<>
 struct Traits<int64_t> {
   enum { kBufferSize = 22 };
   enum { kMaxDigit = 20 };
   static int64_t Negate(int64_t x) { return -x; }
 };
 
-template <typename T>
-static void VerifyValue(T value, void(*f)(T, char*), char* (*g)(T, char*)) {
+template<typename T>
+static void VerifyValue(T value, void(*f)(T, char *), char *(*g)(T, char *)) {
   char buffer1[Traits<T>::kBufferSize];
   char buffer2[Traits<T>::kBufferSize];
 
   f(value, buffer1);
   *g(value, buffer2) = '\0';
 
-
   EXPECT_STREQ(buffer1, buffer2);
 }
 
-template <typename T>
-static void Verify(void(*f)(T, char*), char* (*g)(T, char*)) {
+template<typename T>
+static void Verify(void(*f)(T, char *), char *(*g)(T, char *)) {
   // Boundary cases
   VerifyValue<T>(0, f, g);
   VerifyValue<T>((std::numeric_limits<T>::min)(), f, g);
@@ -106,7 +104,7 @@ static void Verify(void(*f)(T, char*), char* (*g)(T, char*)) {
   }
 }
 
-static void u32toa_naive(uint32_t value, char* buffer) {
+static void u32toa_naive(uint32_t value, char *buffer) {
   char temp[10];
   char *p = temp;
   do {
@@ -121,7 +119,7 @@ static void u32toa_naive(uint32_t value, char* buffer) {
   *buffer = '\0';
 }
 
-static void i32toa_naive(int32_t value, char* buffer) {
+static void i32toa_naive(int32_t value, char *buffer) {
   auto u = static_cast<uint32_t>(value);
   if (value < 0) {
     *buffer++ = '-';
@@ -130,7 +128,7 @@ static void i32toa_naive(int32_t value, char* buffer) {
   u32toa_naive(u, buffer);
 }
 
-static void u64toa_naive(uint64_t value, char* buffer) {
+static void u64toa_naive(uint64_t value, char *buffer) {
   char temp[20];
   char *p = temp;
   do {
@@ -145,7 +143,7 @@ static void u64toa_naive(uint64_t value, char* buffer) {
   *buffer = '\0';
 }
 
-static void i64toa_naive(int64_t value, char* buffer) {
+static void i64toa_naive(int64_t value, char *buffer) {
   auto u = static_cast<uint64_t>(value);
   if (value < 0) {
     *buffer++ = '-';
