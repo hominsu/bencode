@@ -33,35 +33,38 @@
 
 namespace bencode {
 
-#define ERR_TABLE(ERR)  \
-  ERR(OK, "ok")         \
-  ERR(ROOT_NOT_SINGULAR, "root not singular") \
-  ERR(BAD_VALUE, "bad value")                 \
-  ERR(EXPECT_VALUE, "expect value")           \
-  ERR(NUMBER_TOO_BIG, "number too big")       \
-  ERR(MISS_STRING_LENGTH, "miss string length") \
-  ERR(MISS_INITIAL_I, "miss initial i")   \
-  ERR(MISS_INITIAL_L, "miss initial l")   \
-  ERR(MISS_INITIAL_D, "miss initial d")   \
-  ERR(MISS_TRAILING_E, "miss trailing e") \
-  ERR(MISS_KEY, "miss key")               \
-  ERR(MISS_COLON, "miss colon")           \
-  ERR(USER_STOPPED, "user stopped Parse") \
+#undef ERR_TABLE
+#define ERR_TABLE(field_error) \
+  field_error(OK, "ok")        \
+  field_error(ROOT_NOT_SINGULAR, "root not singular") \
+  field_error(BAD_VALUE, "bad value")                 \
+  field_error(EXPECT_VALUE, "expect value")           \
+  field_error(NUMBER_TOO_BIG, "number too big")       \
+  field_error(MISS_STRING_LENGTH, "miss string length") \
+  field_error(MISS_INITIAL_I, "miss initial i")       \
+  field_error(MISS_INITIAL_L, "miss initial l")       \
+  field_error(MISS_INITIAL_D, "miss initial d")       \
+  field_error(MISS_TRAILING_E, "miss trailing e")     \
+  field_error(MISS_KEY, "miss key")                   \
+  field_error(MISS_COLON, "miss colon")               \
+  field_error(USER_STOPPED, "user stopped Parse")     \
   //
 
 namespace error {
 enum ParseError {
-#define ERR_NO(_err, _str) _err,
-  ERR_TABLE(ERR_NO)
-#undef ERR_NO
+#undef ERR_KEY
+#define ERR_KEY(_err, _str) _err,
+  ERR_TABLE(ERR_KEY)
+#undef ERR_KEY
 };
 } // namespace error
 
 inline const char *ParseErrorStr(error::ParseError err) {
   const static char *err_str_table[] = {
-#define ERR_STR(_err, _str) _str,
-      ERR_TABLE(ERR_STR)
-#undef ERR_STR
+#undef ERR_VALUE
+#define ERR_VALUE(_err, _str) _str,
+      ERR_TABLE(ERR_VALUE)
+#undef ERR_VALUE
   };
 
   BENCODE_ASSERT(err >= 0 && err < sizeof(err_str_table) / sizeof(err_str_table[0]));

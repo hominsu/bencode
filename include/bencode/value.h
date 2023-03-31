@@ -41,29 +41,34 @@
 
 namespace bencode {
 
-#define VALUE(B) \
-  B(NULL, std::monostate)SUFFIX \
-  B(INTEGER, int64_t)SUFFIX     \
-  B(STRING, std::shared_ptr<std::vector<char>>)SUFFIX \
-  B(LIST, std::shared_ptr<std::vector<Value>>)SUFFIX  \
-  B(DICT, std::shared_ptr<std::vector<Member>>)       \
+#undef VALUE
+#define VALUE(field, suffix) \
+  field(NULL, std::monostate)suffix \
+  field(INTEGER, int64_t)suffix     \
+  field(STRING, std::shared_ptr<std::vector<char>>)suffix \
+  field(LIST, std::shared_ptr<std::vector<Value>>)suffix  \
+  field(DICT, std::shared_ptr<std::vector<Member>>)       \
   //
 
 class Value;
 struct Member;
 
 enum Type {
+#undef VALUE_NAME
 #define VALUE_NAME(_name, _type) B_##_name
+#undef SUFFIX
 #define SUFFIX ,
-  VALUE(VALUE_NAME)
+  VALUE(VALUE_NAME, SUFFIX)
 #undef SUFFIX
 #undef VALUE_NAME
 };
 
 using Data = std::variant<
+#undef VALUE_NAME
 #define VALUE_TYPE(_name, _type) _type
+#undef SUFFIX
 #define SUFFIX ,
-    VALUE(VALUE_TYPE)
+    VALUE(VALUE_TYPE, SUFFIX)
 #undef SUFFIX
 #undef VALUE_TYPE
 >;
@@ -75,9 +80,11 @@ class Value {
   using MemberIterator = std::vector<Member>::iterator;
   using ConstMemberIterator = std::vector<Member>::const_iterator;
 
+#undef VALUE_NAME
 #define VALUE_TYPE(_name, _type) using B_##_name##_TYPE = _type;
+#undef SUFFIX
 #define SUFFIX
-  VALUE(VALUE_TYPE)
+  VALUE(VALUE_TYPE, SUFFIX)
 #undef SUFFIX
 #undef VALUE_TYPE
 
