@@ -249,7 +249,7 @@ When building examples:
 
 All dependencies are automatically retrieved from github during building, and you do not need to configure them.
 
-With th CMake build types, you can control whether examples and tests are built.
+With the CMake build types, you can control whether examples and tests are built.
 
 ```bash
 cmake -H. -Bbuild \
