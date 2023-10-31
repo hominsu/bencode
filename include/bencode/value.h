@@ -64,7 +64,7 @@ enum Type {
 };
 
 using Data = std::variant<
-#undef VALUE_NAME
+#undef VALUE_TYPE
 #define VALUE_TYPE(_name, _type) _type
 #undef SUFFIX
 #define SUFFIX ,
@@ -80,7 +80,7 @@ class Value {
   using MemberIterator = std::vector<Member>::iterator;
   using ConstMemberIterator = std::vector<Member>::const_iterator;
 
-#undef VALUE_NAME
+#undef VALUE_TYPE
 #define VALUE_TYPE(_name, _type) using B_##_name##_TYPE = _type;
 #undef SUFFIX
 #define SUFFIX
