@@ -18,7 +18,7 @@
 <h3 align="center">bencode</h3>
 
   <p align="center">
-    A header-only Bencode parser and generator for C++17. It supports both SAX and DOM style API.
+    A header-only Bencode parser and generator for C++20. It supports both SAX and DOM style API.
     <br/>
     <a href="https://me.hauhau.cn/projects/bencode/"><strong>Explore the docs »</strong></a>
     <br/>

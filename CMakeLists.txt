@@ -35,7 +35,7 @@ option(BENCODE_ENABLE_INSTRUMENTATION_OPT "Build bencode with -march or -mcpu op
 option(BENCODE_BUILD_ASAN "Build bencode with address sanitizer (gcc/clang)" OFF)
 option(BENCODE_BUILD_UBSAN "Build bencode with undefined behavior sanitizer (gcc/clang)" OFF)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 message("")
