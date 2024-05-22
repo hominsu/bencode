@@ -37,7 +37,6 @@
 
 template<typename Handler>
 class BencodeToJSON : bencode::NonCopyable {
- private:
   Handler &handler_;
 
  public:

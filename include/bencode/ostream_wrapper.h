@@ -27,11 +27,9 @@
 #ifndef BENCODE_INCLUDE_BENCODE_OSTREAM_WRAPPER_H_
 #define BENCODE_INCLUDE_BENCODE_OSTREAM_WRAPPER_H_
 
-#include <iosfwd>
 #include <sstream>
 #include <string_view>
 
-#include "bencode.h"
 #include "non_copyable.h"
 
 namespace bencode {

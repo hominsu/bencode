@@ -29,8 +29,6 @@
 
 #include <cstdio>
 
-#include <vector>
-
 #include "bencode.h"
 #include "non_copyable.h"
 
@@ -88,11 +86,11 @@ public:
     return ch;
   }
 
-  template <typename Tint, class = typename std::enable_if_t<std::is_integral_v<
-                               std::remove_reference_t<Tint>>>>
-  void next(Tint n) {
+  template <typename T>
+    requires std::is_integral_v<T>
+  void next(T n) {
     BENCODE_ASSERT(n >= 0);
-    for (Tint i = 0; i < n; ++i) {
+    for (T i = 0; i < n; ++i) {
       if (hasNext()) {
         read();
       } else {

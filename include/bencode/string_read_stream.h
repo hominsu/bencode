@@ -36,7 +36,6 @@ namespace bencode {
 
 class StringReadStream : NonCopyable {
 public:
-  using Ch = std::string_view::value_type;
   using Iterator = std::string_view::iterator;
 
 private:
@@ -49,29 +48,29 @@ public:
 
   [[nodiscard]] bool hasNext() const { return iter_ != bencode_.end(); }
 
-  Ch peek() { return hasNext() ? *iter_ : '\0'; }
+  char peek() { return hasNext() ? *iter_ : '\0'; }
 
-  Ch next() {
+  char next() {
     if (hasNext()) {
-      Ch ch = *iter_;
+      char ch = *iter_;
       iter_++;
       return ch;
     }
     return '\0';
   }
 
-  template <typename Tint, class = typename std::enable_if_t<std::is_integral_v<
-                               std::remove_reference_t<Tint>>>>
-  void next(Tint n) {
+  template <typename T>
+    requires std::is_integral_v<T>
+  void next(T n) {
     BENCODE_ASSERT(n >= 0);
-    for (Tint i = 0; i < n; ++i) {
+    for (T i = 0; i < n; ++i) {
       if (hasNext()) {
         iter_++;
       }
     }
   }
 
-  void assertNext(Ch ch) {
+  void assertNext(char ch) {
     (void)ch;
     BENCODE_ASSERT(peek() == ch);
     next();

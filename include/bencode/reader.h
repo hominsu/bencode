@@ -37,32 +37,122 @@
 
 namespace bencode {
 
+namespace required {
+
+namespace read_stream {
+namespace details {
+
+template <typename ReadStream>
+concept HasHasNext = requires(ReadStream rs) {
+  { rs.hasNext() } -> std::same_as<bool>;
+};
+
+template <typename ReadStream>
+concept HasPeek = requires(ReadStream rs) {
+  { rs.peek() } -> std::same_as<char>;
+};
+
+template <typename ReadStream>
+concept HasNext = requires(ReadStream rs) {
+  { rs.next() } -> std::same_as<char>;
+};
+
+template <typename ReadStream>
+concept HasAssertNext = requires(ReadStream rs, char ch) {
+  { rs.assertNext(ch) } -> std::same_as<void>;
+};
+
+} // namespace details
+
+template <typename T>
+concept HasAllRequiredFunctions =
+    details::HasHasNext<T> && details::HasPeek<T> && details::HasNext<T> &&
+    details::HasAssertNext<T>;
+
+} // namespace read_stream
+
+namespace handler {
+namespace details {
+
+template <typename Handler>
+concept HasInteger = requires(Handler handler, int64_t i) {
+  { handler.Integer(i) } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasString = requires(Handler handler, std::string_view sv) {
+  { handler.String(sv) } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasKey = requires(Handler handler, std::string_view sv) {
+  { handler.Key(sv) } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasStartList = requires(Handler handler) {
+  { handler.StartList() } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasEndList = requires(Handler handler) {
+  { handler.EndList() } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasStartDict = requires(Handler handler) {
+  { handler.StartDict() } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasEndDict = requires(Handler handler) {
+  { handler.EndDict() } -> std::same_as<bool>;
+};
+
+} // namespace details
+
+template <typename T>
+concept HasAllRequiredFunctions =
+    details::HasInteger<T> && details::HasString<T> && details::HasKey<T> &&
+    details::HasStartList<T> && details::HasEndList<T> &&
+    details::HasStartDict<T> && details::HasEndDict<T>;
+} // namespace handler
+
+} // namespace required
+
 class Reader : NonCopyable {
 public:
-  template <typename ReadStream, typename Handler>
+  template <required::read_stream::HasAllRequiredFunctions ReadStream,
+            required::handler::HasAllRequiredFunctions Handler>
   static error::ParseError Parse(ReadStream &rs, Handler &handler);
 
 private:
-  template <typename ReadStream, typename Handler>
+  template <required::read_stream::HasAllRequiredFunctions ReadStream,
+            required::handler::HasAllRequiredFunctions Handler>
   static void ParseInteger(ReadStream &rs, Handler &handler);
 
-  template <typename ReadStream, typename Handler>
+  template <required::read_stream::HasAllRequiredFunctions ReadStream,
+            required::handler::HasAllRequiredFunctions Handler>
   static void ParseString(ReadStream &rs, Handler &handler, bool is_key);
 
-  template <typename ReadStream, typename Handler>
+  template <required::read_stream::HasAllRequiredFunctions ReadStream,
+            required::handler::HasAllRequiredFunctions Handler>
   static void ParseList(ReadStream &rs, Handler &handler);
 
-  template <typename ReadStream, typename Handler>
+  template <required::read_stream::HasAllRequiredFunctions ReadStream,
+            required::handler::HasAllRequiredFunctions Handler>
   static void ParseDict(ReadStream &rs, Handler &handler);
 
-  template <typename ReadStream, typename Handler>
+  template <required::read_stream::HasAllRequiredFunctions ReadStream,
+            required::handler::HasAllRequiredFunctions Handler>
   static void ParseValue(ReadStream &rs, Handler &handler);
 
   static bool IsDigit(char ch) { return ch >= '0' && ch <= '9'; }
   static bool IsDigit1To9(char ch) { return ch >= '1' && ch <= '9'; }
 };
 
-template <typename ReadStream, typename Handler>
+template <required::read_stream::HasAllRequiredFunctions ReadStream,
+          required::handler::HasAllRequiredFunctions Handler>
 error::ParseError Reader::Parse(ReadStream &rs, Handler &handler) {
   try {
     ParseValue(rs, handler);
@@ -79,8 +169,9 @@ error::ParseError Reader::Parse(ReadStream &rs, Handler &handler) {
   if (!(expr))                                                                 \
   throw Exception(error::USER_STOPPED)
 
-template <typename ReadSteam, typename Handler>
-void Reader::ParseInteger(ReadSteam &rs, Handler &handler) {
+template <required::read_stream::HasAllRequiredFunctions ReadStream,
+          required::handler::HasAllRequiredFunctions Handler>
+void Reader::ParseInteger(ReadStream &rs, Handler &handler) {
   if (rs.peek() == 'i') {
     rs.next();
   } else {
@@ -133,8 +224,9 @@ void Reader::ParseInteger(ReadSteam &rs, Handler &handler) {
   }
 }
 
-template <typename ReadSteam, typename Handler>
-void Reader::ParseString(ReadSteam &rs, Handler &handler, bool is_key) {
+template <required::read_stream::HasAllRequiredFunctions ReadStream,
+          required::handler::HasAllRequiredFunctions Handler>
+void Reader::ParseString(ReadStream &rs, Handler &handler, bool is_key) {
   std::string buffer;
 
   if (rs.peek() == '0') {
@@ -186,8 +278,9 @@ void Reader::ParseString(ReadSteam &rs, Handler &handler, bool is_key) {
   }
 }
 
-template <typename ReadSteam, typename Handler>
-void Reader::ParseList(ReadSteam &rs, Handler &handler) {
+template <required::read_stream::HasAllRequiredFunctions ReadStream,
+          required::handler::HasAllRequiredFunctions Handler>
+void Reader::ParseList(ReadStream &rs, Handler &handler) {
   CALL(handler.StartList());
 
   rs.assertNext('l');
@@ -207,8 +300,9 @@ void Reader::ParseList(ReadSteam &rs, Handler &handler) {
   }
 }
 
-template <typename ReadSteam, typename Handler>
-void Reader::ParseDict(ReadSteam &rs, Handler &handler) {
+template <required::read_stream::HasAllRequiredFunctions ReadStream,
+          required::handler::HasAllRequiredFunctions Handler>
+void Reader::ParseDict(ReadStream &rs, Handler &handler) {
   CALL(handler.StartDict());
 
   rs.assertNext('d');
@@ -237,7 +331,8 @@ void Reader::ParseDict(ReadSteam &rs, Handler &handler) {
 
 #undef CALL
 
-template <typename ReadStream, typename Handler>
+template <required::read_stream::HasAllRequiredFunctions ReadStream,
+          required::handler::HasAllRequiredFunctions Handler>
 void Reader::ParseValue(ReadStream &rs, Handler &handler) {
   if (!rs.hasNext()) {
     throw Exception(error::EXPECT_VALUE);

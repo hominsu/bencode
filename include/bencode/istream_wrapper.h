@@ -39,7 +39,7 @@ public:
   using Ch = typename Stream::char_type;
 
 private:
-  static const std::size_t kInnerBufferSize = 256;
+  static constexpr std::size_t kInnerBufferSize = 256;
   Stream &stream_;
   Ch inner_buffer_[kInnerBufferSize]{};
   Ch *buffer_;
@@ -79,10 +79,10 @@ public:
     return ch;
   }
 
-  template <typename Tint, class = typename std::enable_if_t<std::is_integral_v<
-                               std::remove_reference_t<Tint>>>>
-  void next(Tint n) {
-    for (Tint i = 0; i < n; ++i) {
+  template <typename T>
+    requires std::is_integral_v<T>
+  void next(T n) {
+    for (T i = 0; i < n; ++i) {
       if (hasNext()) {
         read();
       } else {
