@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -44,19 +44,20 @@ BENCODE_DIAG_OFF(effc++)
 
 namespace bencode {
 
-template<typename WriteStream>
-class Writer : NonCopyable {
- protected:
+template <typename WriteStream> class Writer : NonCopyable {
+protected:
   uint64_t stack_;
   WriteStream &os_;
 
- public:
+public:
   explicit Writer(WriteStream &os) : stack_(0), os_(os) {}
   virtual ~Writer() = default;
 
   virtual bool Null() { return true; }
   virtual bool Integer(int64_t i64) { return EndValue(WriteInteger(i64)); }
-  virtual bool String(std::string_view str) { return EndValue(WriteString(str)); }
+  virtual bool String(std::string_view str) {
+    return EndValue(WriteString(str));
+  }
   virtual bool Key(std::string_view str) { return EndValue(WriteKey(str)); }
   virtual bool StartList() {
     ++stack_;
@@ -75,7 +76,7 @@ class Writer : NonCopyable {
     return EndValue(WriteEndDict());
   }
 
- protected:
+protected:
   bool WriteInteger(int64_t i64);
   bool WriteString(std::string_view str);
   bool WriteKey(std::string_view str);
@@ -87,8 +88,8 @@ class Writer : NonCopyable {
   void Flush() { os_.flush(); }
 };
 
-template<typename WriteStream>
-inline bool Writer<WriteStream>::WriteInteger(int64_t i64) {
+template <typename WriteStream>
+bool Writer<WriteStream>::WriteInteger(int64_t i64) {
   char buf[32]{};
   auto size = static_cast<std::size_t>(internal::i64toa(i64, buf) - buf);
   os_.put('i');
@@ -97,50 +98,48 @@ inline bool Writer<WriteStream>::WriteInteger(int64_t i64) {
   return true;
 }
 
-template<typename WriteStream>
-inline bool Writer<WriteStream>::WriteString(std::string_view str) {
+template <typename WriteStream>
+bool Writer<WriteStream>::WriteString(std::string_view str) {
   char buf[32]{};
-  auto size = static_cast<std::size_t>(internal::u64toa(str.length(), buf) - buf);
+  auto size =
+      static_cast<std::size_t>(internal::u64toa(str.length(), buf) - buf);
   os_.puts(buf, size);
   os_.put(':');
   os_.puts(str.data(), str.size());
   return true;
 }
 
-template<typename WriteStream>
-inline bool Writer<WriteStream>::WriteKey(std::string_view str) {
+template <typename WriteStream>
+bool Writer<WriteStream>::WriteKey(std::string_view str) {
   WriteString(str);
   return true;
 }
 
-template<typename WriteStream>
-inline bool Writer<WriteStream>::WriteStartList() {
+template <typename WriteStream> bool Writer<WriteStream>::WriteStartList() {
   os_.put('l');
   return true;
 }
 
-template<typename WriteStream>
-inline bool Writer<WriteStream>::WriteEndList() {
+template <typename WriteStream> bool Writer<WriteStream>::WriteEndList() {
   os_.put('e');
   return true;
 }
 
-template<typename WriteStream>
-inline bool Writer<WriteStream>::WriteStartDict() {
+template <typename WriteStream> bool Writer<WriteStream>::WriteStartDict() {
   os_.put('d');
   return true;
 }
 
-template<typename WriteStream>
-inline bool Writer<WriteStream>::WriteEndDict() {
+template <typename WriteStream> bool Writer<WriteStream>::WriteEndDict() {
   os_.put('e');
   return true;
 }
 
-template<typename WriteStream>
-inline bool Writer<WriteStream>::EndValue(bool ret) {
+template <typename WriteStream> bool Writer<WriteStream>::EndValue(bool ret) {
   // end of bencode text
-  if (stack_ == 0) { Flush(); }
+  if (stack_ == 0) {
+    Flush();
+  }
   return ret;
 }
 
@@ -150,4 +149,4 @@ inline bool Writer<WriteStream>::EndValue(bool ret) {
 BENCODE_DIAG_POP
 #endif
 
-#endif //BENCODE_INCLUDE_BENCODE_WRITER_H_
+#endif // BENCODE_INCLUDE_BENCODE_WRITER_H_

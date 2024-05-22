@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -35,16 +35,17 @@
 namespace bencode {
 
 class StringReadStream : NonCopyable {
- public:
+public:
   using Ch = std::string_view::value_type;
   using Iterator = std::string_view::iterator;
 
- private:
+private:
   std::string_view bencode_;
   Iterator iter_;
 
- public:
-  explicit StringReadStream(std::string_view bencode) : bencode_(bencode), iter_(bencode_.begin()) {}
+public:
+  explicit StringReadStream(std::string_view bencode)
+      : bencode_(bencode), iter_(bencode_.begin()) {}
 
   [[nodiscard]] bool hasNext() const { return iter_ != bencode_.end(); }
 
@@ -59,16 +60,19 @@ class StringReadStream : NonCopyable {
     return '\0';
   }
 
-  template<typename Tint, class = typename std::enable_if_t<std::is_integral_v<std::remove_reference_t<Tint>>>>
+  template <typename Tint, class = typename std::enable_if_t<std::is_integral_v<
+                               std::remove_reference_t<Tint>>>>
   void next(Tint n) {
     BENCODE_ASSERT(n >= 0);
     for (Tint i = 0; i < n; ++i) {
-      if (hasNext()) { iter_++; }
+      if (hasNext()) {
+        iter_++;
+      }
     }
   }
 
   void assertNext(Ch ch) {
-    (void) ch;
+    (void)ch;
     BENCODE_ASSERT(peek() == ch);
     next();
   }
@@ -76,4 +80,4 @@ class StringReadStream : NonCopyable {
 
 } // namespace bencode
 
-#endif //BENCODE_INCLUDE_BENCODE_STRING_READ_STREAM_H_
+#endif // BENCODE_INCLUDE_BENCODE_STRING_READ_STREAM_H_

@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -78,7 +78,8 @@
  * @brief const array length
  */
 #ifndef BENCODE_LENGTH
-#define BENCODE_LENGTH(CONST_ARRAY) (sizeof(CONST_ARRAY) / sizeof(CONST_ARRAY[0]))
+#define BENCODE_LENGTH(CONST_ARRAY)                                            \
+  (sizeof(CONST_ARRAY) / sizeof(CONST_ARRAY[0]))
 #endif // BENCODE_LENGTH
 
 /**
@@ -103,17 +104,18 @@
 /**
  * @brief adopted from Boost
  */
-#define BENCODE_VERSION_CODE(x,y,z) (((x)*100000) + ((y)*100) + (z))
+#define BENCODE_VERSION_CODE(x, y, z) (((x) * 100000) + ((y) * 100) + (z))
 
 /**
  * @brief gnuc version
  */
 #if defined(__GNUC__)
-#define BENCODE_GNUC \
-    BENCODE_VERSION_CODE(__GNUC__,__GNUC_MINOR__,__GNUC_PATCHLEVEL__)
+#define BENCODE_GNUC                                                           \
+  BENCODE_VERSION_CODE(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__)
 #endif
 
-#if defined(__clang__) || (defined(BENCODE_GNUC) && BENCODE_GNUC >= BENCODE_VERSION_CODE(4,2,0))
+#if defined(__clang__) ||                                                      \
+    (defined(BENCODE_GNUC) && BENCODE_GNUC >= BENCODE_VERSION_CODE(4, 2, 0))
 
 #define BENCODE_PRAGMA(x) _Pragma(BENCODE_STRINGIFY(x))
 #if defined(__clang__)
@@ -121,15 +123,17 @@
 #else
 #define BENCODE_DIAG_PRAGMA(x) BENCODE_PRAGMA(GCC diagnostic x)
 #endif
-#define BENCODE_DIAG_OFF(x) BENCODE_DIAG_PRAGMA(ignored BENCODE_STRINGIFY(BENCODE_JOIN(-W,x)))
+#define BENCODE_DIAG_OFF(x)                                                    \
+  BENCODE_DIAG_PRAGMA(ignored BENCODE_STRINGIFY(BENCODE_JOIN(-W, x)))
 
 // push/pop support in Clang and GCC>=4.6
-#if defined(__clang__) || (defined(BENCODE_GNUC) && BENCODE_GNUC >= BENCODE_VERSION_CODE(4,6,0))
+#if defined(__clang__) ||                                                      \
+    (defined(BENCODE_GNUC) && BENCODE_GNUC >= BENCODE_VERSION_CODE(4, 6, 0))
 #define BENCODE_DIAG_PUSH BENCODE_DIAG_PRAGMA(push)
-#define BENCODE_DIAG_POP  BENCODE_DIAG_PRAGMA(pop)
-#else // GCC >= 4.2, < 4.6
+#define BENCODE_DIAG_POP BENCODE_DIAG_PRAGMA(pop)
+#else                     // GCC >= 4.2, < 4.6
 #define BENCODE_DIAG_PUSH /* ignored */
-#define BENCODE_DIAG_POP /* ignored */
+#define BENCODE_DIAG_POP  /* ignored */
 #endif
 
 #elif defined(_MSC_VER)
@@ -138,9 +142,9 @@
 #define BENCODE_PRAGMA(x) __pragma(x)
 #define BENCODE_DIAG_PRAGMA(x) BENCODE_PRAGMA(warning(x))
 
-#define BENCODE_DIAG_OFF(x) BENCODE_DIAG_PRAGMA(disable: x)
+#define BENCODE_DIAG_OFF(x) BENCODE_DIAG_PRAGMA(disable : x)
 #define BENCODE_DIAG_PUSH BENCODE_DIAG_PRAGMA(push)
-#define BENCODE_DIAG_POP  BENCODE_DIAG_PRAGMA(pop)
+#define BENCODE_DIAG_POP BENCODE_DIAG_PRAGMA(pop)
 
 #else
 
@@ -154,7 +158,8 @@
  * @brief Avoid compiler warnings
  */
 #ifndef BENCODE_UINT64_C2
-#define BENCODE_UINT64_C2(high32, low32) ((static_cast<uint64_t>(high32) << 32) | static_cast<uint64_t>(low32))
+#define BENCODE_UINT64_C2(high32, low32)                                       \
+  ((static_cast<uint64_t>(high32) << 32) | static_cast<uint64_t>(low32))
 #endif
 
-#endif //BENCODE_INCLUDE_BENCODE_BENCODE_H_
+#endif // BENCODE_INCLUDE_BENCODE_BENCODE_H_

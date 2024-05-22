@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -41,19 +41,17 @@ BENCODE_DIAG_OFF(effc++)
 namespace bencode {
 
 class StringWriteStream : NonCopyable {
- public:
+public:
   using Ch = char;
 
- private:
+private:
   static const std::size_t kInnerBufferSize = 256;
   std::vector<Ch> buffer_;
 
- public:
+public:
   StringWriteStream() { buffer_.reserve(kInnerBufferSize); }
 
-  void put(Ch ch) {
-    buffer_.push_back(ch);
-  }
+  void put(Ch ch) { buffer_.push_back(ch); }
 
   void puts(const Ch *str, std::size_t length) {
     buffer_.insert(buffer_.end(), str, str + length);
@@ -76,4 +74,4 @@ class StringWriteStream : NonCopyable {
 BENCODE_DIAG_POP
 #endif
 
-#endif //BENCODE_INCLUDE_BENCODE_STRING_WRITE_STREAM_H_
+#endif // BENCODE_INCLUDE_BENCODE_STRING_WRITE_STREAM_H_

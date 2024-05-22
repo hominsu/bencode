@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -34,20 +34,20 @@
 namespace bencode {
 
 #undef ERR_TABLE
-#define ERR_TABLE(field_error) \
-  field_error(OK, "ok")        \
-  field_error(ROOT_NOT_SINGULAR, "root not singular") \
-  field_error(BAD_VALUE, "bad value")                 \
-  field_error(EXPECT_VALUE, "expect value")           \
-  field_error(NUMBER_TOO_BIG, "number too big")       \
-  field_error(MISS_STRING_LENGTH, "miss string length") \
-  field_error(MISS_INITIAL_I, "miss initial i")       \
-  field_error(MISS_INITIAL_L, "miss initial l")       \
-  field_error(MISS_INITIAL_D, "miss initial d")       \
-  field_error(MISS_TRAILING_E, "miss trailing e")     \
-  field_error(MISS_KEY, "miss key")                   \
-  field_error(MISS_COLON, "miss colon")               \
-  field_error(USER_STOPPED, "user stopped Parse")     \
+#define ERR_TABLE(ERROR_FIELD)                                                 \
+  ERROR_FIELD(OK, "ok")                                                        \
+  ERROR_FIELD(ROOT_NOT_SINGULAR, "root not singular")                          \
+  ERROR_FIELD(BAD_VALUE, "bad value")                                          \
+  ERROR_FIELD(EXPECT_VALUE, "expect value")                                    \
+  ERROR_FIELD(NUMBER_TOO_BIG, "number too big")                                \
+  ERROR_FIELD(MISS_STRING_LENGTH, "miss string length")                        \
+  ERROR_FIELD(MISS_INITIAL_I, "miss initial i")                                \
+  ERROR_FIELD(MISS_INITIAL_L, "miss initial l")                                \
+  ERROR_FIELD(MISS_INITIAL_D, "miss initial d")                                \
+  ERROR_FIELD(MISS_TRAILING_E, "miss trailing e")                              \
+  ERROR_FIELD(MISS_KEY, "miss key")                                            \
+  ERROR_FIELD(MISS_COLON, "miss colon")                                        \
+  ERROR_FIELD(USER_STOPPED, "user stopped Parse")                              \
   //
 
 namespace error {
@@ -67,23 +67,25 @@ inline const char *ParseErrorStr(error::ParseError err) {
 #undef ERR_VALUE
   };
 
-  BENCODE_ASSERT(err >= 0 && err < sizeof(err_str_table) / sizeof(err_str_table[0]));
+  BENCODE_ASSERT(err >= 0 &&
+                 err < sizeof(err_str_table) / sizeof(err_str_table[0]));
   return err_str_table[err];
 }
 
 #undef ERR_TABLE
 
 class Exception : public std::exception {
- private:
   error::ParseError err_;
 
- public:
+public:
   explicit Exception(error::ParseError err) : err_(err) {}
 
-  [[nodiscard]] const char *what() const noexcept override { return ParseErrorStr(err_); }
+  [[nodiscard]] const char *what() const noexcept override {
+    return ParseErrorStr(err_);
+  }
   [[nodiscard]] error::ParseError err() const { return err_; }
 };
 
 } // namespace bencode
 
-#endif //BENCODE_INCLUDE_BENCODE_EXCEPTION_H_
+#endif // BENCODE_INCLUDE_BENCODE_EXCEPTION_H_

@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -38,59 +38,77 @@
 namespace bencode {
 
 class Reader : NonCopyable {
- public:
-  template<typename ReadStream, typename Handler>
+public:
+  template <typename ReadStream, typename Handler>
   static error::ParseError Parse(ReadStream &rs, Handler &handler);
 
- private:
-  template<typename ReadStream, typename Handler>
+private:
+  template <typename ReadStream, typename Handler>
   static void ParseInteger(ReadStream &rs, Handler &handler);
 
-  template<typename ReadStream, typename Handler>
+  template <typename ReadStream, typename Handler>
   static void ParseString(ReadStream &rs, Handler &handler, bool is_key);
 
-  template<typename ReadStream, typename Handler>
+  template <typename ReadStream, typename Handler>
   static void ParseList(ReadStream &rs, Handler &handler);
 
-  template<typename ReadStream, typename Handler>
+  template <typename ReadStream, typename Handler>
   static void ParseDict(ReadStream &rs, Handler &handler);
 
-  template<typename ReadStream, typename Handler>
+  template <typename ReadStream, typename Handler>
   static void ParseValue(ReadStream &rs, Handler &handler);
 
   static bool IsDigit(char ch) { return ch >= '0' && ch <= '9'; }
   static bool IsDigit1To9(char ch) { return ch >= '1' && ch <= '9'; }
 };
 
-template<typename ReadStream, typename Handler>
-inline error::ParseError Reader::Parse(ReadStream &rs, Handler &handler) {
+template <typename ReadStream, typename Handler>
+error::ParseError Reader::Parse(ReadStream &rs, Handler &handler) {
   try {
     ParseValue(rs, handler);
-    if (rs.hasNext()) { throw Exception(error::ROOT_NOT_SINGULAR); }
+    if (rs.hasNext()) {
+      throw Exception(error::ROOT_NOT_SINGULAR);
+    }
     return error::OK;
   } catch (Exception &e) {
     return e.err();
   }
 }
 
-#define CALL(expr) if (!(expr)) throw Exception(error::USER_STOPPED)
+#define CALL(expr)                                                             \
+  if (!(expr))                                                                 \
+  throw Exception(error::USER_STOPPED)
 
-template<typename ReadSteam, typename Handler>
-inline void Reader::ParseInteger(ReadSteam &rs, Handler &handler) {
-  if (rs.peek() == 'i') { rs.next(); }
-  else { throw Exception(error::MISS_INITIAL_I); }
+template <typename ReadSteam, typename Handler>
+void Reader::ParseInteger(ReadSteam &rs, Handler &handler) {
+  if (rs.peek() == 'i') {
+    rs.next();
+  } else {
+    throw Exception(error::MISS_INITIAL_I);
+  }
 
   std::string buffer;
 
-  if (rs.peek() == '+') { rs.next(); }
-  if (rs.peek() == '-') { buffer.push_back(rs.next()); }
-  if (rs.peek() == '0') { buffer.push_back(rs.next()); }
-  else {
-    if (!IsDigit1To9(rs.peek())) { throw Exception(error::BAD_VALUE); }
-    for (buffer.push_back(rs.next()); IsDigit(rs.peek()); buffer.push_back(rs.next()));
+  if (rs.peek() == '+') {
+    rs.next();
+  }
+  if (rs.peek() == '-') {
+    buffer.push_back(rs.next());
+  }
+  if (rs.peek() == '0') {
+    buffer.push_back(rs.next());
+  } else {
+    if (!IsDigit1To9(rs.peek())) {
+      throw Exception(error::BAD_VALUE);
+    }
+    for (buffer.push_back(rs.next()); IsDigit(rs.peek());
+         buffer.push_back(rs.next()))
+      ;
   }
 
-  if (buffer.empty()) { throw Exception(error::BAD_VALUE); }
+  if (buffer.empty()) {
+    throw Exception(error::BAD_VALUE);
+  }
 
   try {
     std::size_t idx;
@@ -108,21 +126,31 @@ inline void Reader::ParseInteger(ReadSteam &rs, Handler &handler) {
     throw Exception(error::NUMBER_TOO_BIG);
   }
 
-  if (rs.peek() == 'e') { rs.next(); }
-  else { throw Exception(error::MISS_TRAILING_E); }
+  if (rs.peek() == 'e') {
+    rs.next();
+  } else {
+    throw Exception(error::MISS_TRAILING_E);
+  }
 }
 
-template<typename ReadSteam, typename Handler>
-inline void Reader::ParseString(ReadSteam &rs, Handler &handler, bool is_key) {
+template <typename ReadSteam, typename Handler>
+void Reader::ParseString(ReadSteam &rs, Handler &handler, bool is_key) {
   std::string buffer;
 
-  if (rs.peek() == '0') { buffer.push_back(rs.next()); }
-  else {
-    if (!IsDigit1To9(rs.peek())) { throw Exception(error::MISS_STRING_LENGTH); }
-    for (buffer.push_back(rs.next()); IsDigit(rs.peek()); buffer.push_back(rs.next()));
+  if (rs.peek() == '0') {
+    buffer.push_back(rs.next());
+  } else {
+    if (!IsDigit1To9(rs.peek())) {
+      throw Exception(error::MISS_STRING_LENGTH);
+    }
+    for (buffer.push_back(rs.next()); IsDigit(rs.peek());
+         buffer.push_back(rs.next()))
+      ;
   }
 
-  if (buffer.empty()) { throw Exception(error::MISS_STRING_LENGTH); }
+  if (buffer.empty()) {
+    throw Exception(error::MISS_STRING_LENGTH);
+  }
 
   int64_t length;
 
@@ -140,19 +168,26 @@ inline void Reader::ParseString(ReadSteam &rs, Handler &handler, bool is_key) {
     throw Exception(error::NUMBER_TOO_BIG);
   }
 
-  if (rs.peek() == ':') { rs.next(); }
-  else { throw Exception(error::MISS_COLON); }
+  if (rs.peek() == ':') {
+    rs.next();
+  } else {
+    throw Exception(error::MISS_COLON);
+  }
 
   std::string content;
 
-  for (; length-- > 0; content.push_back(rs.next()));
+  for (; length-- > 0; content.push_back(rs.next()))
+    ;
 
-  if (is_key) { CALL(handler.Key(std::move(content))); }
-  else { CALL(handler.String(std::move(content))); }
+  if (is_key) {
+    CALL(handler.Key(std::move(content)));
+  } else {
+    CALL(handler.String(std::move(content)));
+  }
 }
 
-template<typename ReadSteam, typename Handler>
-inline void Reader::ParseList(ReadSteam &rs, Handler &handler) {
+template <typename ReadSteam, typename Handler>
+void Reader::ParseList(ReadSteam &rs, Handler &handler) {
   CALL(handler.StartList());
 
   rs.assertNext('l');
@@ -172,8 +207,8 @@ inline void Reader::ParseList(ReadSteam &rs, Handler &handler) {
   }
 }
 
-template<typename ReadSteam, typename Handler>
-inline void Reader::ParseDict(ReadSteam &rs, Handler &handler) {
+template <typename ReadSteam, typename Handler>
+void Reader::ParseDict(ReadSteam &rs, Handler &handler) {
   CALL(handler.StartDict());
 
   rs.assertNext('d');
@@ -185,7 +220,9 @@ inline void Reader::ParseDict(ReadSteam &rs, Handler &handler) {
 
   while (true) {
     // parse key
-    if (!IsDigit(rs.peek())) { throw Exception(error::MISS_KEY); }
+    if (!IsDigit(rs.peek())) {
+      throw Exception(error::MISS_KEY);
+    }
     ParseString(rs, handler, true);
 
     // parse element
@@ -200,28 +237,35 @@ inline void Reader::ParseDict(ReadSteam &rs, Handler &handler) {
 
 #undef CALL
 
-template<typename ReadStream, typename Handler>
-inline void Reader::ParseValue(ReadStream &rs, Handler &handler) {
-  if (!rs.hasNext()) { throw Exception(error::EXPECT_VALUE); }
+template <typename ReadStream, typename Handler>
+void Reader::ParseValue(ReadStream &rs, Handler &handler) {
+  if (!rs.hasNext()) {
+    throw Exception(error::EXPECT_VALUE);
+  }
 
   switch (rs.peek()) {
-    case 'd': return ParseDict(rs, handler);
-    case 'i': return ParseInteger(rs, handler);
-    case 'l': return ParseList(rs, handler);
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9': return ParseString(rs, handler, false);
-    default: throw Exception(error::BAD_VALUE);
+  case 'd':
+    return ParseDict(rs, handler);
+  case 'i':
+    return ParseInteger(rs, handler);
+  case 'l':
+    return ParseList(rs, handler);
+  case '0':
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
+    return ParseString(rs, handler, false);
+  default:
+    throw Exception(error::BAD_VALUE);
   }
 }
 
 } // namespace bencode
 
-#endif //BENCODE_INCLUDE_BENCODE_READER_H_
+#endif // BENCODE_INCLUDE_BENCODE_READER_H_

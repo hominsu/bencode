@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -34,12 +34,11 @@
 
 namespace bencode {
 
-template<class Stream>
-class IStreamWrapper : NonCopyable {
- public:
+template <class Stream> class IStreamWrapper : NonCopyable {
+public:
   using Ch = typename Stream::char_type;
 
- private:
+private:
   static const std::size_t kInnerBufferSize = 256;
   Stream &stream_;
   Ch inner_buffer_[kInnerBufferSize]{};
@@ -51,33 +50,26 @@ class IStreamWrapper : NonCopyable {
   std::size_t read_total_;
   bool eof_;
 
- public:
+public:
   explicit IStreamWrapper(Stream &stream)
-      : stream_(stream),
-        buffer_(inner_buffer_),
-        current_(inner_buffer_),
-        buffer_last_(nullptr),
-        buffer_size_(kInnerBufferSize),
-        read_count_(0),
-        read_total_(0),
-        eof_(false) {
+      : stream_(stream), buffer_(inner_buffer_), current_(inner_buffer_),
+        buffer_last_(nullptr), buffer_size_(kInnerBufferSize), read_count_(0),
+        read_total_(0), eof_(false) {
     read();
   }
 
   IStreamWrapper(Stream &stream, char *buffer, std::size_t buffer_size)
-      : stream_(stream),
-        buffer_(buffer),
-        current_(buffer_),
-        buffer_last_(nullptr),
-        buffer_size_(buffer_size),
-        read_count_(0),
-        read_total_(0),
-        eof_(false) {
-    BENCODE_ASSERT(buffer_size_ >= 4 && "buffer size should be bigger then four");
+      : stream_(stream), buffer_(buffer), current_(buffer_),
+        buffer_last_(nullptr), buffer_size_(buffer_size), read_count_(0),
+        read_total_(0), eof_(false) {
+    BENCODE_ASSERT(buffer_size_ >= 4 &&
+                   "buffer size should be bigger then four");
     read();
   }
 
-  [[nodiscard]] bool hasNext() const { return !eof_ || (current_ + 1 - !eof_ <= buffer_last_); }
+  [[nodiscard]] bool hasNext() const {
+    return !eof_ || (current_ + 1 - !eof_ <= buffer_last_);
+  }
 
   Ch peek() { return *current_; }
 
@@ -87,24 +79,29 @@ class IStreamWrapper : NonCopyable {
     return ch;
   }
 
-  template<typename Tint, class = typename std::enable_if_t<std::is_integral_v<std::remove_reference_t<Tint>>>>
+  template <typename Tint, class = typename std::enable_if_t<std::is_integral_v<
+                               std::remove_reference_t<Tint>>>>
   void next(Tint n) {
     for (Tint i = 0; i < n; ++i) {
-      if (hasNext()) { read(); }
-      else { break; }
+      if (hasNext()) {
+        read();
+      } else {
+        break;
+      }
     }
   }
 
   void assertNext(char ch) {
-    (void) ch;
+    (void)ch;
     BENCODE_ASSERT(peek() == ch);
     read();
   }
 
- private:
+private:
   void read() {
-    if (current_ < buffer_last_) { ++current_; }
-    else if (!eof_) {
+    if (current_ < buffer_last_) {
+      ++current_;
+    } else if (!eof_) {
       read_total_ += read_count_;
 
       // if no eof
@@ -121,6 +118,6 @@ class IStreamWrapper : NonCopyable {
   }
 };
 
-} // bencode
+} // namespace bencode
 
-#endif //BENCODE_INCLUDE_BENCODE_ISTREAM_WRAPPER_H_
+#endif // BENCODE_INCLUDE_BENCODE_ISTREAM_WRAPPER_H_

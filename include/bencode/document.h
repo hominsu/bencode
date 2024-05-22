@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -47,7 +47,6 @@ BENCODE_DIAG_OFF(effc++)
 namespace bencode {
 
 class Document : public Value {
- private:
   struct Level {
     Value *value_;
     int value_count_;
@@ -62,12 +61,11 @@ class Document : public Value {
   Value key_;
   bool see_value_ = false;
 
- public:
+public:
   error::ParseError Parse(const char *bencode, std::size_t len);
   error::ParseError Parse(std::string_view bencode);
 
-  template<typename ReadStream>
-  error::ParseError ParseStream(ReadStream &rs);
+  template <typename ReadStream> error::ParseError ParseStream(ReadStream &rs);
 
   // handler
   bool Null();
@@ -79,13 +77,16 @@ class Document : public Value {
   bool StartDict();
   bool EndDict();
 
- private:
+private:
   Value *AddValue(Value &&value);
 };
 
 inline Value *Document::Level::last_value() const {
-  if (type() == B_LIST) { return &std::get<B_LIST_TYPE>(value_->data_)->back(); }
-  else { return &std::get<B_DICT_TYPE>(value_->data_)->back().value_; }
+  if (type() == B_LIST) {
+    return &std::get<B_LIST_TYPE>(value_->data_)->back();
+  } else {
+    return &std::get<B_DICT_TYPE>(value_->data_)->back().value_;
+  }
 }
 
 inline error::ParseError Document::Parse(const char *bencode, std::size_t len) {
@@ -97,8 +98,8 @@ inline error::ParseError Document::Parse(std::string_view bencode) {
   return ParseStream(rs);
 }
 
-template<typename ReadStream>
-inline error::ParseError Document::ParseStream(ReadStream &rs) {
+template <typename ReadStream>
+error::ParseError Document::ParseStream(ReadStream &rs) {
   return Reader::Parse(rs, *this);
 }
 
@@ -148,27 +149,34 @@ inline bool Document::EndDict() {
 
 inline Value *Document::AddValue(Value &&value) {
   auto type = value.GetType();
-  (void) type;
-  if (see_value_) { BENCODE_ASSERT(!stack_.empty() && "root not singular"); }
-  else {
+  (void)type;
+  if (see_value_) {
+    BENCODE_ASSERT(!stack_.empty() && "root not singular");
+  } else {
     BENCODE_ASSERT(type_ == B_NULL);
     see_value_ = true;
     type_ = type;
 
     switch (type) {
-      case B_NULL: break;
-      case B_INTEGER: data_ = std::get<B_INTEGER_TYPE>(value.data_);
-        break;
-      case B_STRING: data_ = std::get<B_STRING_TYPE>(value.data_);
-        std::get<B_STRING_TYPE>(value.data_) = nullptr;
-        break;
-      case B_LIST: data_ = std::get<B_LIST_TYPE>(value.data_);
-        std::get<B_LIST_TYPE>(value.data_) = nullptr;
-        break;
-      case B_DICT: data_ = std::get<B_DICT_TYPE>(value.data_);
-        std::get<B_DICT_TYPE>(value.data_) = nullptr;
-        break;
-      default:break;
+    case B_NULL:
+      break;
+    case B_INTEGER:
+      data_ = std::get<B_INTEGER_TYPE>(value.data_);
+      break;
+    case B_STRING:
+      data_ = std::get<B_STRING_TYPE>(value.data_);
+      std::get<B_STRING_TYPE>(value.data_) = nullptr;
+      break;
+    case B_LIST:
+      data_ = std::get<B_LIST_TYPE>(value.data_);
+      std::get<B_LIST_TYPE>(value.data_) = nullptr;
+      break;
+    case B_DICT:
+      data_ = std::get<B_DICT_TYPE>(value.data_);
+      std::get<B_DICT_TYPE>(value.data_) = nullptr;
+      break;
+    default:
+      break;
     }
     value.type_ = B_NULL;
     return this;
@@ -200,4 +208,4 @@ inline Value *Document::AddValue(Value &&value) {
 BENCODE_DIAG_POP
 #endif // __GNUC__
 
-#endif //BENCODE_INCLUDE_BENCODE_DOCUMENT_H_
+#endif // BENCODE_INCLUDE_BENCODE_DOCUMENT_H_

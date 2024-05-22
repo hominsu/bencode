@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -36,34 +36,27 @@
 
 namespace bencode {
 
-template<class Stream>
-class OStreamWrapper : NonCopyable {
- public:
+template <class Stream> class OStreamWrapper : NonCopyable {
+public:
   using Ch = typename Stream::char_type;
 
- private:
+private:
   Stream &stream_;
 
- public:
+public:
   explicit OStreamWrapper(Stream &_stream) : stream_(_stream) {}
 
-  void put(Ch ch) {
-    stream_.put(ch);
-  }
+  void put(Ch ch) { stream_.put(ch); }
 
   void puts(const char *str, std::streamsize length) {
     stream_.write(str, length);
   }
 
-  void put_sv(std::string_view sv) {
-    stream_ << sv;
-  }
+  void put_sv(std::string_view sv) { stream_ << sv; }
 
-  void flush() {
-    stream_.flush();
-  }
+  void flush() { stream_.flush(); }
 };
 
 } // namespace bencode
 
-#endif //BENCODE_INCLUDE_BENCODE_OSTREAM_WRAPPER_H_
+#endif // BENCODE_INCLUDE_BENCODE_OSTREAM_WRAPPER_H_

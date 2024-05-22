@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -42,13 +42,11 @@
 namespace bencode {
 
 #undef VALUE
-#define VALUE(field, suffix) \
-  field(NULL, std::monostate)suffix \
-  field(INTEGER, int64_t)suffix     \
-  field(STRING, std::shared_ptr<std::vector<char>>)suffix \
-  field(LIST, std::shared_ptr<std::vector<Value>>)suffix  \
-  field(DICT, std::shared_ptr<std::vector<Member>>)       \
-  //
+#define VALUE(field, suffix)                                                   \
+  field(NULL, std::monostate) suffix field(INTEGER, int64_t)                   \
+  suffix field(STRING, std::shared_ptr<std::vector<char>>)                     \
+      suffix field(LIST, std::shared_ptr<std::vector<Value>>)                  \
+          suffix field(DICT, std::shared_ptr<std::vector<Member>>) //
 
 class Value;
 struct Member;
@@ -71,12 +69,12 @@ using Data = std::variant<
     VALUE(VALUE_TYPE, SUFFIX)
 #undef SUFFIX
 #undef VALUE_TYPE
->;
+    >;
 
 class Document;
 
 class Value {
- public:
+public:
   using MemberIterator = std::vector<Member>::iterator;
   using ConstMemberIterator = std::vector<Member>::const_iterator;
 
@@ -88,7 +86,7 @@ class Value {
 #undef SUFFIX
 #undef VALUE_TYPE
 
- private:
+private:
   friend class Document;
 
   using String = std::vector<char>;
@@ -98,13 +96,16 @@ class Value {
   Type type_;
   Data data_;
 
- public:
+public:
   explicit Value(Type type = B_NULL);
   explicit Value(B_INTEGER_TYPE i) : type_(B_INTEGER), data_(i) {};
-  explicit Value(const char *s) : type_(B_STRING), data_(std::make_shared<String>(s, s + strlen(s))) {};
-  explicit Value(std::string_view s) : type_(B_STRING), data_(std::make_shared<String>(s.begin(), s.end())) {};
+  explicit Value(const char *s)
+      : type_(B_STRING), data_(std::make_shared<String>(s, s + strlen(s))) {};
+  explicit Value(std::string_view s)
+      : type_(B_STRING), data_(std::make_shared<String>(s.begin(), s.end())) {};
   Value(const Value &value) = default;
-  Value(Value &&value) noexcept: type_(value.type_), data_(std::move(value.data_)) {};
+  Value(Value &&value) noexcept
+      : type_(value.type_), data_(std::move(value.data_)) {};
   ~Value() = default;
 
   [[nodiscard]] bool IsNull() const { return type_ == B_NULL; }
@@ -141,22 +142,21 @@ class Value {
   Value &operator[](std::string_view key);
   const Value &operator[](std::string_view key) const;
 
-  template<typename T>
-  Value &AddValue(T &&value);
+  template <typename T> Value &AddValue(T &&value);
 
-  template<typename T>
-  Value &AddMember(const char *key, T &&value);
+  template <typename T> Value &AddMember(const char *key, T &&value);
   Value &AddMember(Value &&key, Value &&value);
 
-  template<typename Handler>
-  bool WriteTo(Handler &handler) const;
+  template <typename Handler> bool WriteTo(Handler &handler) const;
 };
 
 #undef VALUE
 
 struct Member {
-  Member(Value &&_key, Value &&_value) : key_(std::move(_key)), value_(std::move(_value)) {}
-  Member(std::string_view _key, Value &&_value) : key_(_key), value_(std::move(_value)) {}
+  Member(Value &&_key, Value &&_value)
+      : key_(std::move(_key)), value_(std::move(_value)) {}
+  Member(std::string_view _key, Value &&_value)
+      : key_(_key), value_(std::move(_value)) {}
 
   Value key_;
   Value value_;
@@ -164,29 +164,35 @@ struct Member {
 
 inline Value::Value(Type type) : type_(type), data_() {
   switch (type) {
-    case B_NULL:
-    case B_INTEGER:break;
-    case B_STRING:data_ = std::make_shared<String>();
-      break;
-    case B_LIST:data_ = std::make_shared<List>();
-      break;
-    case B_DICT:data_ = std::make_shared<Dict>();
-      break;
-    default: BENCODE_ASSERT(false && "bad value GetType");
+  case B_NULL:
+  case B_INTEGER:
+    break;
+  case B_STRING:
+    data_ = std::make_shared<String>();
+    break;
+  case B_LIST:
+    data_ = std::make_shared<List>();
+    break;
+  case B_DICT:
+    data_ = std::make_shared<Dict>();
+    break;
+  default:
+    BENCODE_ASSERT(false && "bad value GetType");
   }
 }
 
 inline std::size_t Value::GetSize() const {
   switch (type_) {
-    case B_LIST: return std::get<B_LIST_TYPE>(data_)->size();
-    case B_DICT: return std::get<B_DICT_TYPE>(data_)->size();
-    default: return 1;
+  case B_LIST:
+    return std::get<B_LIST_TYPE>(data_)->size();
+  case B_DICT:
+    return std::get<B_DICT_TYPE>(data_)->size();
+  default:
+    return 1;
   }
 }
 
-inline Type Value::GetType() const {
-  return type_;
-}
+inline Type Value::GetType() const { return type_; }
 
 inline Value::B_INTEGER_TYPE Value::GetInteger() const {
   BENCODE_ASSERT(type_ == B_INTEGER);
@@ -216,22 +222,22 @@ inline const auto &Value::GetDict() const {
 
 inline Value &Value::SetInteger(Value::B_INTEGER_TYPE i) {
   this->~Value();
-  return *new(this) Value(i);
+  return *new (this) Value(i);
 }
 
 inline Value &Value::SetString(std::string_view s) {
   this->~Value();
-  return *new(this) Value(s);
+  return *new (this) Value(s);
 }
 
 inline Value &Value::SetList() {
   this->~Value();
-  return *new(this) Value(B_LIST);
+  return *new (this) Value(B_LIST);
 }
 
 inline Value &Value::SetDict() {
   this->~Value();
-  return *new(this) Value(B_DICT);
+  return *new (this) Value(B_DICT);
 }
 
 inline Value::MemberIterator Value::MemberBegin() {
@@ -263,7 +269,8 @@ inline Value::ConstMemberIterator Value::MemberEnd() const {
   return const_cast<Value &>(*this).MemberEnd();
 }
 
-inline Value::ConstMemberIterator Value::FindMember(std::string_view key) const {
+inline Value::ConstMemberIterator
+Value::FindMember(std::string_view key) const {
   BENCODE_ASSERT(type_ == B_DICT);
   return const_cast<Value &>(*this).FindMember(key);
 }
@@ -309,16 +316,14 @@ inline const Value &Value::operator[](std::string_view key) const {
   return const_cast<Value &>(*this)[key];
 }
 
-template<typename T>
-inline Value &Value::AddValue(T &&value) {
+template <typename T> Value &Value::AddValue(T &&value) {
   BENCODE_ASSERT(type_ == B_LIST);
   auto ptr = std::get<B_LIST_TYPE>(data_);
   ptr->emplace_back(std::forward<T>(value));
   return ptr->back();
 }
 
-template<typename T>
-inline Value &Value::AddMember(const char *key, T &&value) {
+template <typename T> Value &Value::AddMember(const char *key, T &&value) {
   return AddMember(Value(key), Value(std::forward<T>(value)));
 }
 
@@ -331,31 +336,41 @@ inline Value &Value::AddMember(Value &&key, Value &&value) {
   return ptr->back().value_;
 }
 
-#define CALL_HANDLER(expr) do { if (!(expr)) { return false; } } while(false)
+#define CALL_HANDLER(expr)                                                     \
+  do {                                                                         \
+    if (!(expr)) {                                                             \
+      return false;                                                            \
+    }                                                                          \
+  } while (false)
 
-template<typename Handler>
-inline bool Value::WriteTo(Handler &handler) const {
+template <typename Handler> bool Value::WriteTo(Handler &handler) const {
   switch (type_) {
-    case B_NULL:CALL_HANDLER(handler.Null());
-      break;
-    case B_INTEGER:CALL_HANDLER(handler.Integer(std::get<B_INTEGER_TYPE>(data_)));
-      break;
-    case B_STRING:CALL_HANDLER(handler.String(GetStringView()));
-      break;
-    case B_LIST:CALL_HANDLER(handler.StartList());
-      for (auto &val : *GetList()) {
-        CALL_HANDLER(val.WriteTo(handler));
-      }
-      CALL_HANDLER(handler.EndList());
-      break;
-    case B_DICT:CALL_HANDLER(handler.StartDict());
-      for (auto &member : *GetDict()) {
-        handler.Key(member.key_.GetStringView());
-        CALL_HANDLER(member.value_.WriteTo(handler));
-      }
-      CALL_HANDLER(handler.EndDict());
-      break;
-    default: BENCODE_ASSERT(false && "bad type");
+  case B_NULL:
+    CALL_HANDLER(handler.Null());
+    break;
+  case B_INTEGER:
+    CALL_HANDLER(handler.Integer(std::get<B_INTEGER_TYPE>(data_)));
+    break;
+  case B_STRING:
+    CALL_HANDLER(handler.String(GetStringView()));
+    break;
+  case B_LIST:
+    CALL_HANDLER(handler.StartList());
+    for (auto &val : *GetList()) {
+      CALL_HANDLER(val.WriteTo(handler));
+    }
+    CALL_HANDLER(handler.EndList());
+    break;
+  case B_DICT:
+    CALL_HANDLER(handler.StartDict());
+    for (auto &member : *GetDict()) {
+      handler.Key(member.key_.GetStringView());
+      CALL_HANDLER(member.value_.WriteTo(handler));
+    }
+    CALL_HANDLER(handler.EndDict());
+    break;
+  default:
+    BENCODE_ASSERT(false && "bad type");
   }
   return true;
 }
@@ -364,4 +379,4 @@ inline bool Value::WriteTo(Handler &handler) const {
 
 } // namespace bencode
 
-#endif //BENCODE_INCLUDE_BENCODE_VALUE_H_
+#endif // BENCODE_INCLUDE_BENCODE_VALUE_H_
