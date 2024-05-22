@@ -33,8 +33,8 @@
 #include "bencode/writer.h"
 
 int main(int argc, char *argv[]) {
-  (void) argc;
-  (void) argv;
+  (void)argc;
+  (void)argv;
 
 #if defined(_MSC_VER)
   std::FILE *input;
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
   }
 
   char writeBuffer[65536];
-  bencode::FileWriteStream os(stdout, writeBuffer, sizeof(writeBuffer));
+  bencode::FileWriteStream os(stdout, writeBuffer);
   bencode::Writer writer(os);
   doc.WriteTo(writer);
 

@@ -32,11 +32,11 @@
 #include "bencode/file_write_stream.h"
 
 int main(int argc, char *argv[]) {
-  (void) argc;
-  (void) argv;
+  (void)argc;
+  (void)argv;
 
   char writeBuffer[65536];
-  bencode::FileWriteStream os(stdout, writeBuffer, sizeof(writeBuffer));
+  bencode::FileWriteStream os(stdout, writeBuffer);
   bencode::Writer writer(os);
 
   writer.StartList();

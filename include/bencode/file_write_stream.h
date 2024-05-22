@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -38,35 +38,42 @@
 namespace bencode {
 
 class FileWriteStream : NonCopyable {
- private:
-  static const std::size_t kInnerBufferSize = 256;
+  static constexpr std::size_t kInnerBufferSize = 256;
   std::FILE *fp_;
   char inner_buffer_[kInnerBufferSize]{};
   char *buffer_;
   char *buffer_end_;
   char *current_;
 
- public:
+public:
   explicit FileWriteStream(std::FILE *fp)
-      : fp_(fp),
-        buffer_(inner_buffer_),
-        buffer_end_(buffer_ + kInnerBufferSize),
-        current_(buffer_) {
+      : fp_(fp), buffer_(inner_buffer_),
+        buffer_end_(buffer_ + kInnerBufferSize), current_(buffer_) {
     BENCODE_ASSERT(fp != nullptr && "FILE pointer equal zero");
   }
 
   explicit FileWriteStream(std::FILE *fp, char *buffer, std::size_t buffer_size)
-      : fp_(fp),
-        buffer_(buffer),
-        buffer_end_(buffer + buffer_size),
+      : fp_(fp), buffer_(buffer), buffer_end_(buffer + buffer_size),
         current_(buffer_) {
     BENCODE_ASSERT(fp != nullptr && "FILE pointer equal zero");
   }
 
-  ~FileWriteStream() { if (current_ != buffer_) { flush(); }}
+  template <std::size_t N>
+  explicit FileWriteStream(std::FILE *fp, char (&buffer)[N])
+      : fp_(fp), buffer_(buffer), buffer_end_(buffer + N), current_(buffer_) {
+    BENCODE_ASSERT(fp != nullptr && "FILE pointer equal zero");
+  }
+
+  ~FileWriteStream() {
+    if (current_ != buffer_) {
+      flush();
+    }
+  }
 
   void put(char ch) {
-    if (current_ >= buffer_end_) { flush(); }
+    if (current_ >= buffer_end_) {
+      flush();
+    }
     *current_++ = ch;
   }
 
@@ -126,7 +133,8 @@ class FileWriteStream : NonCopyable {
 
   void flush() {
     if (current_ != buffer_) {
-      size_t result = std::fwrite(buffer_, 1, static_cast<std::size_t>(current_ - buffer_), fp_);
+      size_t result = std::fwrite(
+          buffer_, 1, static_cast<std::size_t>(current_ - buffer_), fp_);
       if (result < static_cast<std::size_t>(current_ - buffer_)) {
       }
       current_ = buffer_;
@@ -136,4 +144,4 @@ class FileWriteStream : NonCopyable {
 
 } // namespace bencode
 
-#endif //BENCODE_INCLUDE_BENCODE_FILE_WRITE_STREAM_H_
+#endif // BENCODE_INCLUDE_BENCODE_FILE_WRITE_STREAM_H_

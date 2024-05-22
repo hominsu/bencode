@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -37,8 +37,7 @@
 namespace bencode {
 
 class FileReadStream : NonCopyable {
- private:
-  static const std::size_t kInnerBufferSize = 256;
+  static constexpr std::size_t kInnerBufferSize = 256;
   std::FILE *fp_;
   char inner_buffer_[kInnerBufferSize]{};
   char *buffer_;
@@ -49,35 +48,37 @@ class FileReadStream : NonCopyable {
   std::size_t read_total_;
   bool eof_;
 
- public:
+public:
   explicit FileReadStream(std::FILE *fp)
-      : fp_(fp),
-        buffer_(inner_buffer_),
-        current_(inner_buffer_),
-        buffer_last_(nullptr),
-        buffer_size_(kInnerBufferSize),
-        read_count_(0),
-        read_total_(0),
-        eof_(false) {
+      : fp_(fp), buffer_(inner_buffer_), current_(inner_buffer_),
+        buffer_last_(nullptr), buffer_size_(kInnerBufferSize), read_count_(0),
+        read_total_(0), eof_(false) {
     BENCODE_ASSERT(fp_ != nullptr && "file pointer should not be empty");
     read();
   }
 
   explicit FileReadStream(std::FILE *fp, char *buffer, std::size_t buffer_size)
-      : fp_(fp),
-        buffer_(buffer),
-        current_(buffer),
-        buffer_last_(nullptr),
-        buffer_size_(buffer_size),
-        read_count_(0),
-        read_total_(0),
-        eof_(false) {
+      : fp_(fp), buffer_(buffer), current_(buffer), buffer_last_(nullptr),
+        buffer_size_(buffer_size), read_count_(0), read_total_(0), eof_(false) {
     BENCODE_ASSERT(fp_ != nullptr && "file pointer should not be empty");
-    BENCODE_ASSERT(buffer_size_ >= 4 && "buffer size should be bigger then four");
+    BENCODE_ASSERT(buffer_size_ >= 4 &&
+                   "buffer size should be bigger then four");
     read();
   }
 
-  [[nodiscard]] bool hasNext() const { return !eof_ || (current_ + 1 - !eof_ <= buffer_last_); }
+  template <std::size_t N>
+  explicit FileReadStream(std::FILE *fp, char (&buffer)[N])
+      : fp_(fp), buffer_(buffer), current_(buffer), buffer_last_(nullptr),
+        buffer_size_(N), read_count_(0), read_total_(0), eof_(false) {
+    BENCODE_ASSERT(fp_ != nullptr && "file pointer should not be empty");
+    BENCODE_ASSERT(buffer_size_ >= 4 &&
+                   "buffer size should be bigger then four");
+    read();
+  }
+
+  [[nodiscard]] bool hasNext() const {
+    return !eof_ || (current_ + 1 - !eof_ <= buffer_last_);
+  }
 
   char peek() { return *current_; }
 
@@ -87,25 +88,30 @@ class FileReadStream : NonCopyable {
     return ch;
   }
 
-  template<typename Tint, class = typename std::enable_if_t<std::is_integral_v<std::remove_reference_t<Tint>>>>
+  template <typename Tint, class = typename std::enable_if_t<std::is_integral_v<
+                               std::remove_reference_t<Tint>>>>
   void next(Tint n) {
     BENCODE_ASSERT(n >= 0);
     for (Tint i = 0; i < n; ++i) {
-      if (hasNext()) { read(); }
-      else { break; }
+      if (hasNext()) {
+        read();
+      } else {
+        break;
+      }
     }
   }
 
   void assertNext(char ch) {
-    (void) ch;
+    (void)ch;
     BENCODE_ASSERT(peek() == ch);
     read();
   }
 
- private:
+private:
   void read() {
-    if (current_ < buffer_last_) { ++current_; }
-    else if (!eof_) {
+    if (current_ < buffer_last_) {
+      ++current_;
+    } else if (!eof_) {
       read_total_ += read_count_;
       read_count_ = std::fread(buffer_, 1, buffer_size_, fp_);
       buffer_last_ = buffer_ + read_count_ - 1;
@@ -122,4 +128,4 @@ class FileReadStream : NonCopyable {
 
 } // namespace bencode
 
-#endif //BENCODE_INCLUDE_BENCODE_FILE_READ_STREAM_H_
+#endif // BENCODE_INCLUDE_BENCODE_FILE_READ_STREAM_H_
