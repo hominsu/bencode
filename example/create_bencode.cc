@@ -40,7 +40,7 @@ int main(const int argc, char *argv[]) {
   bencode::Writer writer(os);
 
   writer.StartList();
-  writer.Integer(::std::numeric_limits<int64_t>::max());
+  writer.Integer(std::numeric_limits<int64_t>::max());
   writer.StartDict();
   writer.Key("json");
   writer.String(R"({"happy": true, "pi": 3.141})");

@@ -147,8 +147,8 @@ private:
             required::handler::HasAllRequiredFunctions Handler>
   static void ParseValue(ReadStream &rs, Handler &handler);
 
-  static bool IsDigit(char ch) { return ch >= '0' && ch <= '9'; }
-  static bool IsDigit1To9(char ch) { return ch >= '1' && ch <= '9'; }
+  static bool IsDigit(const char ch) { return ch >= '0' && ch <= '9'; }
+  static bool IsDigit1To9(const char ch) { return ch >= '1' && ch <= '9'; }
 };
 
 template <required::read_stream::HasAllRequiredFunctions ReadStream,

@@ -48,11 +48,11 @@ public:
 
   [[nodiscard]] bool hasNext() const { return iter_ != bencode_.end(); }
 
-  char peek() { return hasNext() ? *iter_ : '\0'; }
+  [[nodiscard]] char peek() const { return hasNext() ? *iter_ : '\0'; }
 
   char next() {
     if (hasNext()) {
-      char ch = *iter_;
+      const char ch = *iter_;
       iter_++;
       return ch;
     }
@@ -70,7 +70,7 @@ public:
     }
   }
 
-  void assertNext(char ch) {
+  void assertNext(const char ch) {
     (void)ch;
     BENCODE_ASSERT(peek() == ch);
     next();

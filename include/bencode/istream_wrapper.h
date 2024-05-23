@@ -58,10 +58,20 @@ public:
     read();
   }
 
-  IStreamWrapper(Stream &stream, char *buffer, std::size_t buffer_size)
+  IStreamWrapper(Stream &stream, char *buffer, const std::size_t buffer_size)
       : stream_(stream), buffer_(buffer), current_(buffer_),
         buffer_last_(nullptr), buffer_size_(buffer_size), read_count_(0),
         read_total_(0), eof_(false) {
+    BENCODE_ASSERT(buffer_size_ >= 4 &&
+                   "buffer size should be bigger then four");
+    read();
+  }
+
+  template <std::size_t N>
+  IStreamWrapper(Stream &stream, char (&buffer)[N])
+      : stream_(stream), buffer_(buffer), current_(buffer_),
+        buffer_last_(nullptr), buffer_size_(N), read_count_(0), read_total_(0),
+        eof_(false) {
     BENCODE_ASSERT(buffer_size_ >= 4 &&
                    "buffer size should be bigger then four");
     read();
@@ -91,7 +101,7 @@ public:
     }
   }
 
-  void assertNext(char ch) {
+  void assertNext(const char ch) {
     (void)ch;
     BENCODE_ASSERT(peek() == ch);
     read();

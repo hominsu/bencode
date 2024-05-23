@@ -52,7 +52,7 @@ public:
     BENCODE_ASSERT(fp != nullptr && "FILE pointer equal zero");
   }
 
-  explicit FileWriteStream(std::FILE *fp, char *buffer, std::size_t buffer_size)
+  explicit FileWriteStream(std::FILE *fp, char *buffer, const std::size_t buffer_size)
       : fp_(fp), buffer_(buffer), buffer_end_(buffer + buffer_size),
         current_(buffer_) {
     BENCODE_ASSERT(fp != nullptr && "FILE pointer equal zero");
@@ -70,14 +70,14 @@ public:
     }
   }
 
-  void put(char ch) {
+  void put(const char ch) {
     if (current_ >= buffer_end_) {
       flush();
     }
     *current_++ = ch;
   }
 
-  void put_n(char ch, std::size_t size) {
+  void put_n(const char ch, std::size_t size) {
     auto avail = static_cast<std::size_t>(buffer_end_ - current_);
     while (size > avail) {
       std::memset(current_, ch, avail);
@@ -111,7 +111,7 @@ public:
     }
   }
 
-  void put_sv(std::string_view sv) {
+  void put_sv(const std::string_view sv) {
     auto avail = static_cast<std::size_t>(buffer_end_ - current_);
     std::size_t length = sv.length();
     std::size_t copy = 0;

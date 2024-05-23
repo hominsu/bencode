@@ -59,7 +59,7 @@ enum ParseError {
 };
 } // namespace error
 
-inline const char *ParseErrorStr(error::ParseError err) {
+inline const char *ParseErrorStr(const error::ParseError err) {
   const static char *err_str_table[] = {
 #undef ERR_VALUE
 #define ERR_VALUE(_err, _str) _str,
@@ -78,7 +78,7 @@ class Exception : public std::exception {
   error::ParseError err_;
 
 public:
-  explicit Exception(error::ParseError err) : err_(err) {}
+  explicit Exception(const error::ParseError err) : err_(err) {}
 
   [[nodiscard]] const char *what() const noexcept override {
     return ParseErrorStr(err_);

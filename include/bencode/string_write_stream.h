@@ -45,19 +45,19 @@ public:
   using Ch = char;
 
 private:
-  static const std::size_t kInnerBufferSize = 256;
+  static constexpr std::size_t kInnerBufferSize = 256;
   std::vector<Ch> buffer_;
 
 public:
   StringWriteStream() { buffer_.reserve(kInnerBufferSize); }
 
-  void put(Ch ch) { buffer_.push_back(ch); }
+  void put(const Ch ch) { buffer_.push_back(ch); }
 
-  void puts(const Ch *str, std::size_t length) {
+  void puts(const Ch *str, const std::size_t length) {
     buffer_.insert(buffer_.end(), str, str + length);
   }
 
-  void put_sv(std::string_view str) {
+  void put_sv(const std::string_view str) {
     buffer_.insert(buffer_.end(), str.begin(), str.end());
   }
 

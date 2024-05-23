@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -101,8 +102,9 @@ public:
   explicit Value(B_INTEGER_TYPE i) : type_(B_INTEGER), data_(i) {};
   explicit Value(const char *s)
       : type_(B_STRING), data_(std::make_shared<String>(s, s + strlen(s))) {};
-  explicit Value(std::string_view s)
-      : type_(B_STRING), data_(std::make_shared<String>(s.begin(), s.end())) {};
+  explicit Value(const std::string_view sv)
+      : type_(B_STRING),
+        data_(std::make_shared<String>(sv.begin(), sv.end())) {};
   Value(const Value &value) = default;
   Value(Value &&value) noexcept
       : type_(value.type_), data_(std::move(value.data_)) {};
@@ -123,7 +125,7 @@ public:
   [[nodiscard]] const auto &GetDict() const;
 
   Value &SetInteger(B_INTEGER_TYPE i);
-  Value &SetString(std::string_view s);
+  Value &SetString(std::string_view sv);
   Value &SetList();
   Value &SetDict();
 
@@ -162,7 +164,7 @@ struct Member {
   Value value_;
 };
 
-inline Value::Value(Type type) : type_(type), data_() {
+inline Value::Value(const Type type) : type_(type) {
   switch (type) {
   case B_NULL:
   case B_INTEGER:
@@ -220,14 +222,14 @@ inline const auto &Value::GetDict() const {
   return std::get<B_DICT_TYPE>(data_);
 }
 
-inline Value &Value::SetInteger(Value::B_INTEGER_TYPE i) {
+inline Value &Value::SetInteger(const B_INTEGER_TYPE i) {
   this->~Value();
   return *new (this) Value(i);
 }
 
-inline Value &Value::SetString(std::string_view s) {
+inline Value &Value::SetString(const std::string_view sv) {
   this->~Value();
-  return *new (this) Value(s);
+  return *new (this) Value(sv);
 }
 
 inline Value &Value::SetList() {
@@ -250,13 +252,12 @@ inline Value::MemberIterator Value::MemberEnd() {
   return std::get<B_DICT_TYPE>(data_)->end();
 }
 
-inline Value::MemberIterator Value::FindMember(std::string_view key) {
+inline Value::MemberIterator Value::FindMember(const std::string_view key) {
   BENCODE_ASSERT(type_ == B_DICT);
-  return std::find_if(std::get<B_DICT_TYPE>(data_)->begin(),
-                      std::get<B_DICT_TYPE>(data_)->end(),
-                      [key](const Member &member) -> bool {
-                        return member.key_.GetStringView() == key;
-                      });
+  return std::ranges::find_if(*std::get<B_DICT_TYPE>(data_),
+                              [key](const Member &member) -> bool {
+                                return member.key_.GetStringView() == key;
+                              });
 }
 
 inline Value::ConstMemberIterator Value::MemberBegin() const {
@@ -290,20 +291,20 @@ inline Value &Value::operator=(Value &&val) noexcept {
   return *this;
 }
 
-inline Value &Value::operator[](std::size_t index) {
+inline Value &Value::operator[](const std::size_t index) {
   BENCODE_ASSERT(type_ == B_LIST);
   return std::get<B_LIST_TYPE>(data_)->at(index);
 }
 
-inline const Value &Value::operator[](std::size_t index) const {
+inline const Value &Value::operator[](const std::size_t index) const {
   BENCODE_ASSERT(type_ == B_LIST);
   return std::get<B_LIST_TYPE>(data_)->at(index);
 }
 
-inline Value &Value::operator[](std::string_view key) {
+inline Value &Value::operator[](const std::string_view key) {
   BENCODE_ASSERT(type_ == B_DICT);
-  auto it = FindMember(key);
-  if (it != std::get<B_DICT_TYPE>(data_)->end()) {
+  if (const auto it = FindMember(key);
+      it != std::get<B_DICT_TYPE>(data_)->end()) {
     return it->value_;
   }
   BENCODE_ASSERT(false && "value no found");
@@ -311,7 +312,7 @@ inline Value &Value::operator[](std::string_view key) {
   return fake;
 }
 
-inline const Value &Value::operator[](std::string_view key) const {
+inline const Value &Value::operator[](const std::string_view key) const {
   BENCODE_ASSERT(type_ == B_DICT);
   return const_cast<Value &>(*this)[key];
 }

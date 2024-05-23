@@ -52,7 +52,7 @@ public:
   bool Double(const neujson::internal::Double d) {
     (void)d;
     return true;
-  };
+  }
   bool String(std::string_view str) { return handler_.String(str); }
   bool Key(std::string_view str) { return handler_.Key(str); }
   bool StartArray() { return handler_.StartList(); }

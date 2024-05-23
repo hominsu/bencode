@@ -31,7 +31,6 @@
 
 namespace bencode::internal {
 
-namespace {
 constexpr char kDigitsLut[200] = {
     '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', '0', '5', '0', '6', '0',
     '7', '0', '8', '0', '9', '1', '0', '1', '1', '1', '2', '1', '3', '1', '4',
@@ -47,14 +46,13 @@ constexpr char kDigitsLut[200] = {
     '2', '8', '3', '8', '4', '8', '5', '8', '6', '8', '7', '8', '8', '8', '9',
     '9', '0', '9', '1', '9', '2', '9', '3', '9', '4', '9', '5', '9', '6', '9',
     '7', '9', '8', '9', '9'};
-} // namespace
 
 inline char *u32toa(uint32_t value, char *buffer) {
   BENCODE_ASSERT(buffer != nullptr);
 
   if (value < 10000) {
-    const uint32_t d1 = (value / 100) << 1;
-    const uint32_t d2 = (value % 100) << 1;
+    const uint32_t d1 = value / 100 << 1;
+    const uint32_t d2 = value % 100 << 1;
 
     if (value >= 1000)
       *buffer++ = kDigitsLut[d1];
@@ -67,11 +65,11 @@ inline char *u32toa(uint32_t value, char *buffer) {
     const uint32_t b = value / 10000;
     const uint32_t c = value % 10000;
 
-    const uint32_t d1 = (b / 100) << 1;
-    const uint32_t d2 = (b % 100) << 1;
+    const uint32_t d1 = b / 100 << 1;
+    const uint32_t d2 = b % 100 << 1;
 
-    const uint32_t d3 = (c / 100) << 1;
-    const uint32_t d4 = (c % 100) << 1;
+    const uint32_t d3 = c / 100 << 1;
+    const uint32_t d4 = c % 100 << 1;
 
     if (value >= 10000000)
       *buffer++ = kDigitsLut[d1];
@@ -93,17 +91,18 @@ inline char *u32toa(uint32_t value, char *buffer) {
       const unsigned i = a << 1;
       *buffer++ = kDigitsLut[i];
       *buffer++ = kDigitsLut[i + 1];
-    } else
+    } else {
       *buffer++ = static_cast<char>('0' + static_cast<char>(a));
+    }
 
     const uint32_t b = value / 10000; // 0 to 9999
     const uint32_t c = value % 10000; // 0 to 9999
 
-    const uint32_t d1 = (b / 100) << 1;
-    const uint32_t d2 = (b % 100) << 1;
+    const uint32_t d1 = b / 100 << 1;
+    const uint32_t d2 = b % 100 << 1;
 
-    const uint32_t d3 = (c / 100) << 1;
-    const uint32_t d4 = (c % 100) << 1;
+    const uint32_t d3 = c / 100 << 1;
+    const uint32_t d4 = c % 100 << 1;
 
     *buffer++ = kDigitsLut[d1];
     *buffer++ = kDigitsLut[d1 + 1];
@@ -117,7 +116,7 @@ inline char *u32toa(uint32_t value, char *buffer) {
   return buffer;
 }
 
-inline char *i32toa(int32_t value, char *buffer) {
+inline char *i32toa(const int32_t value, char *buffer) {
   BENCODE_ASSERT(buffer != nullptr);
   auto u = static_cast<uint32_t>(value);
   if (value < 0) {
@@ -141,10 +140,9 @@ inline char *u64toa(uint64_t value, char *buffer) {
   constexpr uint64_t kTen16 = kTen8 * kTen8;
 
   if (value < kTen8) {
-    auto v = static_cast<uint32_t>(value);
-    if (v < 10000) {
-      const uint32_t d1 = (v / 100) << 1;
-      const uint32_t d2 = (v % 100) << 1;
+    if (auto v = static_cast<uint32_t>(value); v < 10000) {
+      const uint32_t d1 = v / 100 << 1;
+      const uint32_t d2 = v % 100 << 1;
 
       if (v >= 1000) {
         *buffer++ = kDigitsLut[d1];
@@ -161,11 +159,11 @@ inline char *u64toa(uint64_t value, char *buffer) {
       const uint32_t b = v / 10000;
       const uint32_t c = v % 10000;
 
-      const uint32_t d1 = (b / 100) << 1;
-      const uint32_t d2 = (b % 100) << 1;
+      const uint32_t d1 = b / 100 << 1;
+      const uint32_t d2 = b % 100 << 1;
 
-      const uint32_t d3 = (c / 100) << 1;
-      const uint32_t d4 = (c % 100) << 1;
+      const uint32_t d3 = c / 100 << 1;
+      const uint32_t d4 = c % 100 << 1;
 
       if (value >= 10000000) {
         *buffer++ = kDigitsLut[d1];
@@ -190,20 +188,20 @@ inline char *u64toa(uint64_t value, char *buffer) {
     const uint32_t b0 = v0 / 10000;
     const uint32_t c0 = v0 % 10000;
 
-    const uint32_t d1 = (b0 / 100) << 1;
-    const uint32_t d2 = (b0 % 100) << 1;
+    const uint32_t d1 = b0 / 100 << 1;
+    const uint32_t d2 = b0 % 100 << 1;
 
-    const uint32_t d3 = (c0 / 100) << 1;
-    const uint32_t d4 = (c0 % 100) << 1;
+    const uint32_t d3 = c0 / 100 << 1;
+    const uint32_t d4 = c0 % 100 << 1;
 
     const uint32_t b1 = v1 / 10000;
     const uint32_t c1 = v1 % 10000;
 
-    const uint32_t d5 = (b1 / 100) << 1;
-    const uint32_t d6 = (b1 % 100) << 1;
+    const uint32_t d5 = b1 / 100 << 1;
+    const uint32_t d6 = b1 % 100 << 1;
 
-    const uint32_t d7 = (c1 / 100) << 1;
-    const uint32_t d8 = (c1 % 100) << 1;
+    const uint32_t d7 = c1 / 100 << 1;
+    const uint32_t d8 = c1 % 100 << 1;
 
     if (value >= kTen15) {
       *buffer++ = kDigitsLut[d1];
@@ -249,12 +247,12 @@ inline char *u64toa(uint64_t value, char *buffer) {
     } else if (a < 1000) {
       *buffer++ = static_cast<char>('0' + static_cast<char>(a / 100));
 
-      const uint32_t i = (a % 100) << 1;
+      const uint32_t i = a % 100 << 1;
       *buffer++ = kDigitsLut[i];
       *buffer++ = kDigitsLut[i + 1];
     } else {
-      const uint32_t i = (a / 100) << 1;
-      const uint32_t j = (a % 100) << 1;
+      const uint32_t i = a / 100 << 1;
+      const uint32_t j = a % 100 << 1;
       *buffer++ = kDigitsLut[i];
       *buffer++ = kDigitsLut[i + 1];
       *buffer++ = kDigitsLut[j];
@@ -267,20 +265,20 @@ inline char *u64toa(uint64_t value, char *buffer) {
     const uint32_t b0 = v0 / 10000;
     const uint32_t c0 = v0 % 10000;
 
-    const uint32_t d1 = (b0 / 100) << 1;
-    const uint32_t d2 = (b0 % 100) << 1;
+    const uint32_t d1 = b0 / 100 << 1;
+    const uint32_t d2 = b0 % 100 << 1;
 
-    const uint32_t d3 = (c0 / 100) << 1;
-    const uint32_t d4 = (c0 % 100) << 1;
+    const uint32_t d3 = c0 / 100 << 1;
+    const uint32_t d4 = c0 % 100 << 1;
 
     const uint32_t b1 = v1 / 10000;
     const uint32_t c1 = v1 % 10000;
 
-    const uint32_t d5 = (b1 / 100) << 1;
-    const uint32_t d6 = (b1 % 100) << 1;
+    const uint32_t d5 = b1 / 100 << 1;
+    const uint32_t d6 = b1 % 100 << 1;
 
-    const uint32_t d7 = (c1 / 100) << 1;
-    const uint32_t d8 = (c1 % 100) << 1;
+    const uint32_t d7 = c1 / 100 << 1;
+    const uint32_t d8 = c1 % 100 << 1;
 
     *buffer++ = kDigitsLut[d1];
     *buffer++ = kDigitsLut[d1 + 1];
@@ -303,7 +301,7 @@ inline char *u64toa(uint64_t value, char *buffer) {
   return buffer;
 }
 
-inline char *i64toa(int64_t value, char *buffer) {
+inline char *i64toa(const int64_t value, char *buffer) {
   BENCODE_ASSERT(buffer != nullptr);
   auto u = static_cast<uint64_t>(value);
   if (value < 0) {

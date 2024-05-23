@@ -44,7 +44,6 @@ BENCODE_DIAG_OFF(effc++)
 #endif
 
 class TestHandler : bencode::NonCopyable {
- private:
   bencode::Value value_;
   bencode::Type value_type_ = bencode::B_NULL;
 
@@ -63,7 +62,7 @@ class TestHandler : bencode::NonCopyable {
   [[nodiscard]] bencode::Type type() const { return value_type_; }
   [[nodiscard]] bencode::Value value() const { return value_; }
 
-  void set_test_error(bool _test_error) { test_error_ = _test_error; }
+  void set_test_error(const bool _test_error) { test_error_ = _test_error; }
 
  private:
   void AddValue(bencode::Value &&_value) {
@@ -77,17 +76,17 @@ bool TestHandler::Null() {
   return true;
 }
 
-bool TestHandler::Integer(int64_t i64) {
+bool TestHandler::Integer(const int64_t i64) {
   AddValue(bencode::Value(i64));
   return true;
 }
 
-bool TestHandler::String(std::string_view str) {
+bool TestHandler::String(const std::string_view str) {
   AddValue(bencode::Value(str));
   return true;
 }
 
-bool TestHandler::Key(std::string_view str) {
+bool TestHandler::Key(const std::string_view str) {
   AddValue(bencode::Value(str));
   return true;
 }

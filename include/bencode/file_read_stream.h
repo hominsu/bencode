@@ -55,7 +55,7 @@ public:
     read();
   }
 
-  explicit FileReadStream(std::FILE *fp, char *buffer, std::size_t buffer_size)
+  explicit FileReadStream(std::FILE *fp, char *buffer, const std::size_t buffer_size)
       : fp_(fp), buffer_(buffer), current_(buffer), buffer_last_(nullptr),
         buffer_size_(buffer_size), read_count_(0), read_total_(0), eof_(false) {
     BENCODE_ASSERT(fp_ != nullptr && "file pointer should not be empty");
@@ -78,10 +78,10 @@ public:
     return !eof_ || (current_ + 1 - !eof_ <= buffer_last_);
   }
 
-  char peek() { return *current_; }
+  [[nodiscard]] char peek() const { return *current_; }
 
   char next() {
-    char ch = *current_;
+    const char ch = *current_;
     read();
     return ch;
   }
@@ -99,7 +99,7 @@ public:
     }
   }
 
-  void assertNext(char ch) {
+  void assertNext(const char ch) {
     (void)ch;
     BENCODE_ASSERT(peek() == ch);
     read();

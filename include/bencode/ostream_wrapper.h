@@ -50,7 +50,7 @@ public:
     stream_.write(str, length);
   }
 
-  void put_sv(std::string_view sv) { stream_ << sv; }
+  void put_sv(std::string_view sv) const { stream_ << sv; }
 
   void flush() { stream_.flush(); }
 };
