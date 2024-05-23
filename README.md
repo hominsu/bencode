@@ -67,8 +67,7 @@ int main(const int argc, char *argv[]) {
 
   // 1. Parse a Bencode string into DOM.
   bencode::Document doc;
-  auto err = doc.Parse(kSample[0]);
-  if (err != bencode::error::OK) {
+  if (const auto err = doc.Parse(kSample[0]); err != bencode::error::OK) {
     puts(bencode::ParseErrorStr(err));
     return EXIT_FAILURE;
   }
@@ -198,7 +197,7 @@ public:
   bool Double(const neujson::internal::Double d) {
     (void)d;
     return true;
-  };
+  }
   bool String(std::string_view str) { return handler_.String(str); }
   bool Key(std::string_view str) { return handler_.Key(str); }
   bool StartArray() { return handler_.StartList(); }
