@@ -77,7 +77,7 @@ struct TorrentFile {
   }
 };
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
@@ -89,10 +89,10 @@ int main(int argc, char *argv[]) {
   }
 
   // 2. Bind DOM to struct.
-  auto torrent_file = TorrentFile(doc);
+  const auto torrent_file = TorrentFile(doc);
 
   // 3. Convert struct to Bencode and output
-  auto value = torrent_file.toBencode();
+  const auto value = torrent_file.toBencode();
   char writeBuffer[65536];
   bencode::FileWriteStream out(stdout, writeBuffer);
   bencode::Writer writer(out);

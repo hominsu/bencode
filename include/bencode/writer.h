@@ -44,7 +44,35 @@ BENCODE_DIAG_OFF(effc++)
 
 namespace bencode {
 
-template <typename WriteStream> class Writer : NonCopyable {
+namespace required::write_stream {
+namespace details {
+
+template <typename WriteStream>
+concept HasPut = requires(WriteStream os, char ch) {
+  { os.put(ch) } -> std::same_as<void>;
+};
+
+template <typename WriteStream>
+concept HasPuts =
+    requires(WriteStream os, const char *str, std::size_t length) {
+      { os.puts(str, length) } -> std::same_as<void>;
+    };
+
+template <typename WriteStream>
+concept HasFlush = requires(WriteStream os) {
+  { os.flush() } -> std::same_as<void>;
+};
+
+} // namespace details
+
+template <typename T>
+concept HasAllRequiredFunctions =
+    details::HasPut<T> && details::HasPuts<T> && details::HasFlush<T>;
+
+} // namespace required::write_stream
+
+template <required::write_stream::HasAllRequiredFunctions WriteStream>
+class Writer : NonCopyable {
 protected:
   uint64_t stack_;
   WriteStream &os_;
@@ -54,11 +82,15 @@ public:
   virtual ~Writer() = default;
 
   virtual bool Null() { return true; }
-  virtual bool Integer(int64_t i64) { return EndValue(WriteInteger(i64)); }
-  virtual bool String(std::string_view str) {
+  virtual bool Integer(const int64_t i64) {
+    return EndValue(WriteInteger(i64));
+  }
+  virtual bool String(const std::string_view str) {
     return EndValue(WriteString(str));
   }
-  virtual bool Key(std::string_view str) { return EndValue(WriteKey(str)); }
+  virtual bool Key(const std::string_view str) {
+    return EndValue(WriteKey(str));
+  }
   virtual bool StartList() {
     ++stack_;
     return EndValue(WriteStartList());
@@ -88,8 +120,8 @@ protected:
   void Flush() { os_.flush(); }
 };
 
-template <typename WriteStream>
-bool Writer<WriteStream>::WriteInteger(int64_t i64) {
+template <required::write_stream::HasAllRequiredFunctions WriteStream>
+bool Writer<WriteStream>::WriteInteger(const int64_t i64) {
   char buf[32]{};
   auto size = static_cast<std::size_t>(internal::i64toa(i64, buf) - buf);
   os_.put('i');
@@ -98,8 +130,8 @@ bool Writer<WriteStream>::WriteInteger(int64_t i64) {
   return true;
 }
 
-template <typename WriteStream>
-bool Writer<WriteStream>::WriteString(std::string_view str) {
+template <required::write_stream::HasAllRequiredFunctions WriteStream>
+bool Writer<WriteStream>::WriteString(const std::string_view str) {
   char buf[32]{};
   auto size =
       static_cast<std::size_t>(internal::u64toa(str.length(), buf) - buf);
@@ -109,33 +141,38 @@ bool Writer<WriteStream>::WriteString(std::string_view str) {
   return true;
 }
 
-template <typename WriteStream>
-bool Writer<WriteStream>::WriteKey(std::string_view str) {
+template <required::write_stream::HasAllRequiredFunctions WriteStream>
+bool Writer<WriteStream>::WriteKey(const std::string_view str) {
   WriteString(str);
   return true;
 }
 
-template <typename WriteStream> bool Writer<WriteStream>::WriteStartList() {
+template <required::write_stream::HasAllRequiredFunctions WriteStream>
+bool Writer<WriteStream>::WriteStartList() {
   os_.put('l');
   return true;
 }
 
-template <typename WriteStream> bool Writer<WriteStream>::WriteEndList() {
+template <required::write_stream::HasAllRequiredFunctions WriteStream>
+bool Writer<WriteStream>::WriteEndList() {
   os_.put('e');
   return true;
 }
 
-template <typename WriteStream> bool Writer<WriteStream>::WriteStartDict() {
+template <required::write_stream::HasAllRequiredFunctions WriteStream>
+bool Writer<WriteStream>::WriteStartDict() {
   os_.put('d');
   return true;
 }
 
-template <typename WriteStream> bool Writer<WriteStream>::WriteEndDict() {
+template <required::write_stream::HasAllRequiredFunctions WriteStream>
+bool Writer<WriteStream>::WriteEndDict() {
   os_.put('e');
   return true;
 }
 
-template <typename WriteStream> bool Writer<WriteStream>::EndValue(bool ret) {
+template <required::write_stream::HasAllRequiredFunctions WriteStream>
+bool Writer<WriteStream>::EndValue(const bool ret) {
   // end of bencode text
   if (stack_ == 0) {
     Flush();
