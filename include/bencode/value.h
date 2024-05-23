@@ -42,6 +42,58 @@
 
 namespace bencode {
 
+namespace required::handler {
+namespace details {
+
+template <typename Handler>
+concept HasNull = requires(Handler handler) {
+  { handler.Null() } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasInteger = requires(Handler handler, int64_t i) {
+  { handler.Integer(i) } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasString = requires(Handler handler, std::string_view sv) {
+  { handler.String(sv) } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasKey = requires(Handler handler, std::string_view sv) {
+  { handler.Key(sv) } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasStartList = requires(Handler handler) {
+  { handler.StartList() } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasEndList = requires(Handler handler) {
+  { handler.EndList() } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasStartDict = requires(Handler handler) {
+  { handler.StartDict() } -> std::same_as<bool>;
+};
+
+template <typename Handler>
+concept HasEndDict = requires(Handler handler) {
+  { handler.EndDict() } -> std::same_as<bool>;
+};
+
+} // namespace details
+
+template <typename T>
+concept HasAllRequiredFunctions =
+    details::HasNull<T> && details::HasInteger<T> && details::HasString<T> &&
+    details::HasKey<T> && details::HasStartList<T> && details::HasEndList<T> &&
+    details::HasStartDict<T> && details::HasEndDict<T>;
+} // namespace required::handler
+
 #undef VALUE
 #define VALUE(field, suffix)                                                   \
   field(NULL, std::monostate) suffix field(INTEGER, int64_t)                   \
@@ -149,7 +201,8 @@ public:
   template <typename T> Value &AddMember(const char *key, T &&value);
   Value &AddMember(Value &&key, Value &&value);
 
-  template <typename Handler> bool WriteTo(Handler &handler) const;
+  template <required::handler::HasAllRequiredFunctions Handler>
+  bool WriteTo(Handler &handler) const;
 };
 
 #undef VALUE
@@ -344,7 +397,8 @@ inline Value &Value::AddMember(Value &&key, Value &&value) {
     }                                                                          \
   } while (false)
 
-template <typename Handler> bool Value::WriteTo(Handler &handler) const {
+template <required::handler::HasAllRequiredFunctions Handler>
+bool Value::WriteTo(Handler &handler) const {
   switch (type_) {
   case B_NULL:
     CALL_HANDLER(handler.Null());

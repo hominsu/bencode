@@ -65,7 +65,8 @@ public:
   error::ParseError Parse(const char *bencode, std::size_t len);
   error::ParseError Parse(std::string_view bencode);
 
-  template <typename ReadStream> error::ParseError ParseStream(ReadStream &rs);
+  template <required::read_stream::HasAllRequiredFunctions ReadStream>
+  error::ParseError ParseStream(ReadStream &rs);
 
   // handler
   bool Null();
@@ -89,16 +90,17 @@ inline Value *Document::Level::last_value() const {
   }
 }
 
-inline error::ParseError Document::Parse(const char *bencode, std::size_t len) {
+inline error::ParseError Document::Parse(const char *bencode,
+                                         const std::size_t len) {
   return Parse(std::string_view(bencode, len));
 }
 
-inline error::ParseError Document::Parse(std::string_view bencode) {
+inline error::ParseError Document::Parse(const std::string_view bencode) {
   StringReadStream rs(bencode);
   return ParseStream(rs);
 }
 
-template <typename ReadStream>
+template <required::read_stream::HasAllRequiredFunctions ReadStream>
 error::ParseError Document::ParseStream(ReadStream &rs) {
   return Reader::Parse(rs, *this);
 }
@@ -108,17 +110,17 @@ inline bool Document::Null() {
   return true;
 }
 
-inline bool Document::Integer(int64_t i64) {
+inline bool Document::Integer(const int64_t i64) {
   AddValue(Value(i64));
   return true;
 }
 
-inline bool Document::String(std::string_view str) {
+inline bool Document::String(const std::string_view str) {
   AddValue(Value(str));
   return true;
 }
 
-inline bool Document::Key(std::string_view str) {
+inline bool Document::Key(const std::string_view str) {
   AddValue(Value(str));
   return true;
 }
@@ -182,8 +184,7 @@ inline Value *Document::AddValue(Value &&value) {
     return this;
   }
 
-  auto &top = stack_.back();
-  if (top.type() == B_LIST) {
+  if (auto &top = stack_.back(); top.type() == B_LIST) {
     top.value_->AddValue(value);
     ++top.value_count_;
     return top.last_value();

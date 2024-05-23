@@ -37,9 +37,7 @@
 
 namespace bencode {
 
-namespace required {
-
-namespace read_stream {
+namespace required::read_stream {
 namespace details {
 
 template <typename ReadStream>
@@ -69,56 +67,7 @@ concept HasAllRequiredFunctions =
     details::HasHasNext<T> && details::HasPeek<T> && details::HasNext<T> &&
     details::HasAssertNext<T>;
 
-} // namespace read_stream
-
-namespace handler {
-namespace details {
-
-template <typename Handler>
-concept HasInteger = requires(Handler handler, int64_t i) {
-  { handler.Integer(i) } -> std::same_as<bool>;
-};
-
-template <typename Handler>
-concept HasString = requires(Handler handler, std::string_view sv) {
-  { handler.String(sv) } -> std::same_as<bool>;
-};
-
-template <typename Handler>
-concept HasKey = requires(Handler handler, std::string_view sv) {
-  { handler.Key(sv) } -> std::same_as<bool>;
-};
-
-template <typename Handler>
-concept HasStartList = requires(Handler handler) {
-  { handler.StartList() } -> std::same_as<bool>;
-};
-
-template <typename Handler>
-concept HasEndList = requires(Handler handler) {
-  { handler.EndList() } -> std::same_as<bool>;
-};
-
-template <typename Handler>
-concept HasStartDict = requires(Handler handler) {
-  { handler.StartDict() } -> std::same_as<bool>;
-};
-
-template <typename Handler>
-concept HasEndDict = requires(Handler handler) {
-  { handler.EndDict() } -> std::same_as<bool>;
-};
-
-} // namespace details
-
-template <typename T>
-concept HasAllRequiredFunctions =
-    details::HasInteger<T> && details::HasString<T> && details::HasKey<T> &&
-    details::HasStartList<T> && details::HasEndList<T> &&
-    details::HasStartDict<T> && details::HasEndDict<T>;
-} // namespace handler
-
-} // namespace required
+} // namespace required::read_stream
 
 class Reader : NonCopyable {
 public:
