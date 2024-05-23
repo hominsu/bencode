@@ -8,7 +8,7 @@ if (POLICY CMP0054)
 endif ()
 
 set(LIB_MAJOR_VERSION "1")
-set(LIB_MINOR_VERSION "0")
+set(LIB_MINOR_VERSION "1")
 set(LIB_PATCH_VERSION "0")
 set(LIB_VERSION_STRING "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_PATCH_VERSION}")
 
@@ -163,7 +163,7 @@ if (BENCODE_BUILD_TESTS)
 endif ()
 
 # header
-install(DIRECTORY include/bencode
+install(DIRECTORY include/${PROJECT_NAME}
         DESTINATION "${INCLUDE_INSTALL_DIR}"
         COMPONENT dev)
 

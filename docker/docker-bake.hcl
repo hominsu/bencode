@@ -11,7 +11,7 @@ variable "AUTHOR_EMAIL" {
 }
 
 variable "ALPINE_VERSION" {
-  default = "3.19"
+  default = "latest"
 }
 
 variable "VERSION" {
@@ -35,8 +35,7 @@ target "bencode-alpine" {
   }
   tags = [
     "${REPO}/bencode:latest",
-    "${REPO}/bencode:alpine-${ALPINE_VERSION}-latest",
-    notequal("", VERSION) ? "${REPO}/bencode:alpine-${ALPINE_VERSION}-${VERSION}" : "",
+    notequal("", VERSION) ? "${REPO}/bencode:${VERSION}" : "",
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/arm"]
 }
