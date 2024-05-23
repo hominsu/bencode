@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -32,7 +32,7 @@
 #include "bencode/file_write_stream.h"
 #include "bencode/writer.h"
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
@@ -42,11 +42,13 @@ int main(int argc, char *argv[]) {
 #else
   std::FILE *input = fopen("../../debian-11.6.0-amd64-DVD-1.iso.torrent", "r");
 #endif
-  if (input == nullptr) { exit(EXIT_FAILURE); }
+  if (input == nullptr) {
+    exit(EXIT_FAILURE);
+  }
   bencode::FileReadStream is(input);
 
   bencode::Document doc;
-  auto err = doc.ParseStream(is);
+  const auto err = doc.ParseStream(is);
   fclose(input);
 
   if (err != bencode::error::OK) {

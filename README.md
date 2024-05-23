@@ -51,19 +51,19 @@
 
 This simple example parses a Bencode string into a document (DOM), make a simple modification of the DOM, and finally stringify the DOM to a Bencode string.
 
-```cpp
+```c++
 #include <cstdio>
 #include <cstdlib>
 
 #include "bencode/document.h"
 #include "bencode/exception.h"
-#include "bencode/writer.h"
 #include "bencode/string_write_stream.h"
+#include "bencode/writer.h"
 #include "sample.h"
 
-int main(int argc, char *argv[]) {
-  (void) argc;
-  (void) argv;
+int main(const int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   // 1. Parse a Bencode string into DOM.
   bencode::Document doc;
@@ -113,12 +113,10 @@ Due to the excellent design of bencode library, the bencode library can be easil
 #include "neujson/file_write_stream.h"
 #include "neujson/pretty_writer.h"
 
-template<typename Handler>
-class BencodeToJSON : bencode::NonCopyable {
- private:
+template <typename Handler> class BencodeToJSON : bencode::NonCopyable {
   Handler &handler_;
 
- public:
+public:
   explicit BencodeToJSON(Handler &handler) : handler_(handler) {}
 
   bool Null() { return true; }
@@ -131,9 +129,9 @@ class BencodeToJSON : bencode::NonCopyable {
   bool EndDict() { return handler_.EndObject(); }
 };
 
-int main(int argc, char *argv[]) {
-  (void) argc;
-  (void) argv;
+int main(const int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   bencode::StringReadStream in(kSample[0]);
 
@@ -142,8 +140,8 @@ int main(int argc, char *argv[]) {
   pretty_writer.SetIndent(' ', 2);
   BencodeToJSON to_json(pretty_writer);
 
-  auto err = bencode::Reader::Parse(in, to_json);
-  if (err != bencode::error::OK) {
+  if (const auto err = bencode::Reader::Parse(in, to_json);
+      err != bencode::error::OK) {
     puts(bencode::ParseErrorStr(err));
     return EXIT_FAILURE;
   }
@@ -184,23 +182,21 @@ Output:
 #include "neujson/reader.h"
 #include "neujson/string_read_stream.h"
 
-template<typename Handler>
-class JSONToBencode : neujson::NonCopyable {
- private:
+template <typename Handler> class JSONToBencode : neujson::NonCopyable {
   Handler &handler_;
 
- public:
+public:
   explicit JSONToBencode(Handler &handler) : handler_(handler) {}
 
   bool Null() { return handler_.Null(); }
-  bool Bool(bool b) {
-    (void) b;
+  bool Bool(const bool b) {
+    (void)b;
     return true;
   }
   bool Int32(int32_t i32) { return handler_.Integer(i32); }
   bool Int64(int64_t i64) { return handler_.Integer(i64); }
-  bool Double(neujson::internal::Double d) {
-    (void) d;
+  bool Double(const neujson::internal::Double d) {
+    (void)d;
     return true;
   };
   bool String(std::string_view str) { return handler_.String(str); }
@@ -211,9 +207,9 @@ class JSONToBencode : neujson::NonCopyable {
   bool EndObject() { return handler_.EndDict(); }
 };
 
-int main(int argc, char *argv[]) {
-  (void) argc;
-  (void) argv;
+int main(const int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   neujson::StringReadStream in(kSample[1]);
 
@@ -221,8 +217,8 @@ int main(int argc, char *argv[]) {
   bencode::Writer writer(out);
   JSONToBencode to_json(writer);
 
-  auto err = neujson::Reader::Parse(in, to_json);
-  if (err != neujson::error::OK) {
+  if (const auto err = neujson::Reader::Parse(in, to_json);
+      err != neujson::error::OK) {
     puts(neujson::ParseErrorStr(err));
     return EXIT_FAILURE;
   }

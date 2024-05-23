@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -28,39 +28,41 @@
 
 #include <sstream>
 
-#include "bencode/exception.h"
 #include "bencode/document.h"
+#include "bencode/exception.h"
 #include "bencode/istream_wrapper.h"
 #include "bencode/ostream_wrapper.h"
 #include "bencode/writer.h"
 #include "sample.h"
 
-int main(int argc, char *argv[]) {
-  (void) argc;
-  (void) argv;
+int main(const int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   std::stringstream iss;
   std::stringstream oss;
 
   iss << kSample[0];
 
-  // any class derived from std::istream, ex. std::istringstream, std::stringstream, std::ifstream, std::fstream
+  // any class derived from std::istream, ex. std::istringstream,
+  // std::stringstream, std::ifstream, std::fstream
   bencode::IStreamWrapper is(iss);
 
   bencode::Document doc;
-  auto err = doc.ParseStream(is);
 
-  if (err != bencode::error::OK) {
+  if (const auto err = doc.ParseStream(is); err != bencode::error::OK) {
     puts(bencode::ParseErrorStr(err));
     return EXIT_FAILURE;
   }
 
-  // any class derived from std::ostream, ex. std::ostringstream, std::stringstream, std::ofstream, std::fstream
+  // any class derived from std::ostream, ex. std::ostringstream,
+  // std::stringstream, std::ofstream, std::fstream
   bencode::OStreamWrapper os(oss);
   bencode::Writer writer(os);
   doc.WriteTo(writer);
 
-  fprintf(stdout, "%.*s", static_cast<int>(oss.str().length()), oss.str().data());
+  fprintf(stdout, "%.*s", static_cast<int>(oss.str().length()),
+          oss.str().data());
 
   return 0;
 }

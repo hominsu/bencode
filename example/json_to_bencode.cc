@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -36,23 +36,21 @@
 #include "neujson/reader.h"
 #include "neujson/string_read_stream.h"
 
-template<typename Handler>
-class JSONToBencode : neujson::NonCopyable {
- private:
+template <typename Handler> class JSONToBencode : neujson::NonCopyable {
   Handler &handler_;
 
- public:
+public:
   explicit JSONToBencode(Handler &handler) : handler_(handler) {}
 
   bool Null() { return handler_.Null(); }
-  bool Bool(bool b) {
-    (void) b;
+  bool Bool(const bool b) {
+    (void)b;
     return true;
   }
   bool Int32(int32_t i32) { return handler_.Integer(i32); }
   bool Int64(int64_t i64) { return handler_.Integer(i64); }
-  bool Double(neujson::internal::Double d) {
-    (void) d;
+  bool Double(const neujson::internal::Double d) {
+    (void)d;
     return true;
   };
   bool String(std::string_view str) { return handler_.String(str); }
@@ -63,9 +61,9 @@ class JSONToBencode : neujson::NonCopyable {
   bool EndObject() { return handler_.EndDict(); }
 };
 
-int main(int argc, char *argv[]) {
-  (void) argc;
-  (void) argv;
+int main(const int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   neujson::StringReadStream in(kSample[1]);
 
@@ -73,8 +71,8 @@ int main(int argc, char *argv[]) {
   bencode::Writer writer(out);
   JSONToBencode to_json(writer);
 
-  auto err = neujson::Reader::Parse(in, to_json);
-  if (err != neujson::error::OK) {
+  if (const auto err = neujson::Reader::Parse(in, to_json);
+      err != neujson::error::OK) {
     puts(neujson::ParseErrorStr(err));
     return EXIT_FAILURE;
   }

@@ -32,7 +32,7 @@
 #include "bencode/string_read_stream.h"
 #include "bencode/writer.h"
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
@@ -44,8 +44,8 @@ int main(int argc, char *argv[]) {
   bencode::FileWriteStream out(stdout, writeBuffer);
   bencode::Writer writer(out);
 
-  auto err = bencode::Reader::Parse(in, writer);
-  if (err != bencode::error::OK) {
+  if (const auto err = bencode::Reader::Parse(in, writer);
+      err != bencode::error::OK) {
     puts(bencode::ParseErrorStr(err));
     return EXIT_FAILURE;
   }

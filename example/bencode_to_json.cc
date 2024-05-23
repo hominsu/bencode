@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -35,11 +35,10 @@
 #include "neujson/file_write_stream.h"
 #include "neujson/pretty_writer.h"
 
-template<typename Handler>
-class BencodeToJSON : bencode::NonCopyable {
+template <typename Handler> class BencodeToJSON : bencode::NonCopyable {
   Handler &handler_;
 
- public:
+public:
   explicit BencodeToJSON(Handler &handler) : handler_(handler) {}
 
   bool Null() { return true; }
@@ -52,9 +51,9 @@ class BencodeToJSON : bencode::NonCopyable {
   bool EndDict() { return handler_.EndObject(); }
 };
 
-int main(int argc, char *argv[]) {
-  (void) argc;
-  (void) argv;
+int main(const int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   bencode::StringReadStream in(kSample[0]);
 
@@ -63,8 +62,8 @@ int main(int argc, char *argv[]) {
   pretty_writer.SetIndent(' ', 2);
   BencodeToJSON to_json(pretty_writer);
 
-  auto err = bencode::Reader::Parse(in, to_json);
-  if (err != bencode::error::OK) {
+  if (const auto err = bencode::Reader::Parse(in, to_json);
+      err != bencode::error::OK) {
     puts(bencode::ParseErrorStr(err));
     return EXIT_FAILURE;
   }
