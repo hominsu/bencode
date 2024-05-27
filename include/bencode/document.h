@@ -150,7 +150,7 @@ inline bool Document::EndDict() {
 }
 
 inline Value *Document::AddValue(Value &&value) {
-  auto type = value.GetType();
+  const auto type = value.GetType();
   (void)type;
   if (see_value_) {
     BENCODE_ASSERT(!stack_.empty() && "root not singular");
@@ -167,20 +167,16 @@ inline Value *Document::AddValue(Value &&value) {
       break;
     case B_STRING:
       data_ = std::get<B_STRING_TYPE>(value.data_);
-      std::get<B_STRING_TYPE>(value.data_) = nullptr;
       break;
     case B_LIST:
       data_ = std::get<B_LIST_TYPE>(value.data_);
-      std::get<B_LIST_TYPE>(value.data_) = nullptr;
       break;
     case B_DICT:
       data_ = std::get<B_DICT_TYPE>(value.data_);
-      std::get<B_DICT_TYPE>(value.data_) = nullptr;
       break;
     default:
       break;
     }
-    value.type_ = B_NULL;
     return this;
   }
 

@@ -42,7 +42,7 @@ private:
   Stream &stream_;
 
 public:
-  explicit OStreamWrapper(Stream &_stream) : stream_(_stream) {}
+  explicit OStreamWrapper(Stream &stream) : stream_(stream) {}
 
   void put(Ch ch) { stream_.put(ch); }
 

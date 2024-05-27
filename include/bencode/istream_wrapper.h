@@ -30,21 +30,19 @@
 #include <sstream>
 
 #include "bencode.h"
+#include "concepts.h"
 #include "non_copyable.h"
 
 namespace bencode {
 
-template <class Stream> class IStreamWrapper : NonCopyable {
-public:
-  using Ch = typename Stream::char_type;
-
-private:
+template <concepts::StreamCharTypeIsChar Stream>
+class IStreamWrapper : NonCopyable {
   static constexpr std::size_t kInnerBufferSize = 256;
   Stream &stream_;
-  Ch inner_buffer_[kInnerBufferSize]{};
-  Ch *buffer_;
-  Ch *current_;
-  Ch *buffer_last_;
+  char inner_buffer_[kInnerBufferSize]{};
+  char *buffer_;
+  char *current_;
+  char *buffer_last_;
   std::size_t buffer_size_;
   std::size_t read_count_;
   std::size_t read_total_;
@@ -77,21 +75,26 @@ public:
     read();
   }
 
-  [[nodiscard]] bool hasNext() const {
-    return !eof_ || (current_ + 1 - !eof_ <= buffer_last_);
+  template <concepts::PositiveNumber T = std::size_t>
+  [[nodiscard]] bool hasNext(T n = 1) const {
+    return !eof_ || (current_ + n - !eof_ <= buffer_last_);
   }
 
-  Ch peek() { return *current_; }
+  [[nodiscard]] char peek() const { return *current_; }
 
-  Ch next() {
-    Ch ch = *current_;
+  char next() {
+    const char ch = *current_;
     read();
     return ch;
   }
 
-  template <typename T>
-    requires std::is_integral_v<T>
-  void next(T n) {
+  template <concepts::PositiveNumber T> std::string next(T n) {
+    auto str = std::make_shared<std::string>();
+    auto ret = read<T>(str, n);
+    return {ret->c_str(), ret->size()};
+  }
+
+  template <concepts::GreaterEqualZeroNumber T> void skip(T n) {
     for (T i = 0; i < n; ++i) {
       if (hasNext()) {
         read();
@@ -125,6 +128,42 @@ private:
         eof_ = true;
       }
     }
+  }
+
+  template <concepts::PositiveNumber T>
+  std::shared_ptr<std::string> &read(std::shared_ptr<std::string> &str,
+                                     T n = 1) {
+    if (current_ + n <= buffer_last_) {
+      str->append(current_, n);
+      current_ += n;
+      return str;
+    } else if (!eof_) {
+      const std::size_t remaining = n - (buffer_last_ - current_ + 1);
+      const std::size_t need_read = n - remaining;
+      str->append(current_, remaining);
+
+      read_total_ += read_count_;
+
+      // if no eof
+      buffer_last_ = buffer_ + buffer_size_ - 1;
+      current_ = buffer_;
+
+      // eof
+      if (!stream_.read(buffer_, static_cast<std::streamsize>(buffer_size_))) {
+        read_count_ = static_cast<std::size_t>(stream_.gcount());
+        *(buffer_last_ = buffer_ + read_count_) = '\0';
+        eof_ = true;
+      }
+
+      if (eof_ && need_read > read_count_) {
+        str->append(current_, read_count_);
+        return str;
+      }
+
+      return read(str, need_read);
+    }
+
+    return str;
   }
 };
 

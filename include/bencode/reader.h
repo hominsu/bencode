@@ -175,7 +175,7 @@ void Reader::ParseInteger(ReadStream &rs, Handler &handler) {
 
 template <required::read_stream::HasAllRequiredFunctions ReadStream,
           required::handler::HasAllRequiredFunctions Handler>
-void Reader::ParseString(ReadStream &rs, Handler &handler, bool is_key) {
+void Reader::ParseString(ReadStream &rs, Handler &handler, const bool is_key) {
   std::string buffer;
 
   if (rs.peek() == '0') {
@@ -215,15 +215,10 @@ void Reader::ParseString(ReadStream &rs, Handler &handler, bool is_key) {
     throw Exception(error::MISS_COLON);
   }
 
-  std::string content;
-
-  for (; length-- > 0; content.push_back(rs.next()))
-    ;
-
   if (is_key) {
-    CALL(handler.Key(std::move(content)));
+    CALL(handler.Key(rs.next(length)));
   } else {
-    CALL(handler.String(std::move(content)));
+    CALL(handler.String(rs.next(length)));
   }
 }
 

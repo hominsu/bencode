@@ -30,6 +30,7 @@
 #include <cstdio>
 
 #include "bencode.h"
+#include "concepts.h"
 #include "non_copyable.h"
 
 namespace bencode {
@@ -55,7 +56,8 @@ public:
     read();
   }
 
-  explicit FileReadStream(std::FILE *fp, char *buffer, const std::size_t buffer_size)
+  explicit FileReadStream(std::FILE *fp, char *buffer,
+                          const std::size_t buffer_size)
       : fp_(fp), buffer_(buffer), current_(buffer), buffer_last_(nullptr),
         buffer_size_(buffer_size), read_count_(0), read_total_(0), eof_(false) {
     BENCODE_ASSERT(fp_ != nullptr && "file pointer should not be empty");
@@ -74,8 +76,9 @@ public:
     read();
   }
 
-  [[nodiscard]] bool hasNext() const {
-    return !eof_ || (current_ + 1 - !eof_ <= buffer_last_);
+  template <concepts::PositiveNumber T = std::size_t>
+  [[nodiscard]] bool hasNext(T n = 1) const {
+    return !eof_ || (current_ + n - !eof_ <= buffer_last_);
   }
 
   [[nodiscard]] char peek() const { return *current_; }
@@ -86,10 +89,13 @@ public:
     return ch;
   }
 
-  template <typename T>
-    requires std::is_integral_v<T>
-  void next(T n) {
-    BENCODE_ASSERT(n >= 0);
+  template <concepts::PositiveNumber T> std::string next(T n) {
+    auto str = std::make_shared<std::string>();
+    auto ret = read<T>(str, n);
+    return {ret->c_str(), ret->size()};
+  }
+
+  template <concepts::GreaterEqualZeroNumber T> void skip(T n) {
     for (T i = 0; i < n; ++i) {
       if (hasNext()) {
         read();
@@ -121,6 +127,40 @@ private:
         eof_ = true;
       }
     }
+  }
+
+  template <concepts::PositiveNumber T>
+  std::shared_ptr<std::string> &read(std::shared_ptr<std::string> &str,
+                                     T n = 1) {
+    if (current_ + n <= buffer_last_) {
+      str->append(current_, n);
+      current_ += n;
+      return str;
+    } else if (!eof_) {
+      const std::size_t remaining = n - (buffer_last_ - current_ + 1);
+      const std::size_t need_read = n - remaining;
+      str->append(current_, buffer_last_ - current_ + 1);
+
+      read_total_ += read_count_;
+      read_count_ = std::fread(buffer_, 1, buffer_size_, fp_);
+      buffer_last_ = buffer_ + read_count_ - 1;
+      current_ = buffer_;
+
+      if (read_count_ < buffer_size_) {
+        buffer_[read_count_] = '\0';
+        ++buffer_last_;
+        eof_ = true;
+      }
+
+      if (eof_ && need_read > read_count_) {
+        str->append(current_, read_count_);
+        return str;
+      }
+
+      return read(str, need_read);
+    }
+
+    return str;
   }
 };
 

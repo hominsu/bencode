@@ -30,6 +30,7 @@
 #include <string_view>
 
 #include "bencode.h"
+#include "concepts.h"
 #include "non_copyable.h"
 
 namespace bencode {
@@ -53,20 +54,23 @@ public:
   char next() {
     if (hasNext()) {
       const char ch = *iter_;
-      iter_++;
+      std::advance(iter_, 1);
       return ch;
     }
     return '\0';
   }
 
-  template <typename T>
-    requires std::is_integral_v<T>
-  void next(T n) {
-    BENCODE_ASSERT(n >= 0);
-    for (T i = 0; i < n; ++i) {
-      if (hasNext()) {
-        iter_++;
-      }
+  template <concepts::PositiveNumber T> std::string_view next(T n) {
+    auto start = iter_;
+    if (std::distance(iter_, bencode_.end()) >= n) {
+      std::advance(iter_, n);
+    }
+    return {start, iter_};
+  }
+
+  template <concepts::GreaterEqualZeroNumber T> void skip(T n) {
+    if (std::distance(iter_, bencode_.end()) >= n) {
+      std::advance(iter_, n);
     }
   }
 

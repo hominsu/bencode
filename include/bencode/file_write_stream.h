@@ -133,7 +133,7 @@ public:
 
   void flush() {
     if (current_ != buffer_) {
-      size_t result = std::fwrite(
+      const std::size_t result = std::fwrite(
           buffer_, 1, static_cast<std::size_t>(current_ - buffer_), fp_);
       if (result < static_cast<std::size_t>(current_ - buffer_)) {
       }
