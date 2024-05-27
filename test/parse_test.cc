@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -49,7 +49,7 @@ class TestHandler : bencode::NonCopyable {
 
   bool test_error_ = false;
 
- public:
+public:
   bool Null();
   bool Integer(int64_t i64);
   bool String(std::string_view str);
@@ -62,12 +62,14 @@ class TestHandler : bencode::NonCopyable {
   [[nodiscard]] bencode::Type type() const { return value_type_; }
   [[nodiscard]] bencode::Value value() const { return value_; }
 
-  void set_test_error(const bool _test_error) { test_error_ = _test_error; }
+  void set_test_error(const bool test_error) { test_error_ = test_error; }
 
- private:
-  void AddValue(bencode::Value &&_value) {
-    if (!test_error_) { value_type_ = _value.GetType(); }
-    value_ = std::move(_value);
+private:
+  void AddValue(bencode::Value &&value) {
+    if (!test_error_) {
+      value_type_ = value.GetType();
+    }
+    value_ = std::move(value);
   }
 };
 
@@ -111,25 +113,26 @@ bool TestHandler::EndDict() {
   return true;
 }
 
-#define ERROR_EQ(expect, actual) \
-  do {                           \
-    EXPECT_STREQ(bencode::ParseErrorStr((expect)), bencode::ParseErrorStr((actual))); \
-  } while(0)                     \
-  //
+#define ERROR_EQ(expect, actual)                                               \
+  do {                                                                         \
+    EXPECT_STREQ(bencode::ParseErrorStr((expect)),                             \
+                 bencode::ParseErrorStr((actual)));                            \
+  } while (0) //
 
-#define TEST_INTEGER(expect, b) \
-  do {                          \
-    std::string_view ss((b));   \
-    bencode::StringReadStream read_stream(ss); \
-    TestHandler test_handler;   \
-    ERROR_EQ(bencode::error::ParseError::OK, bencode::Reader::Parse(read_stream, test_handler)); \
-    EXPECT_EQ(bencode::B_INTEGER, test_handler.type());                                          \
-    EXPECT_EQ((expect), test_handler.value().GetInteger());                                      \
-  } while (0)                   \
-  //
+#define TEST_INTEGER(expect, b)                                                \
+  do {                                                                         \
+    std::string_view ss((b));                                                  \
+    bencode::StringReadStream read_stream(ss);                                 \
+    TestHandler test_handler;                                                  \
+    ERROR_EQ(bencode::error::ParseError::OK,                                   \
+             bencode::Reader::Parse(read_stream, test_handler));               \
+    EXPECT_EQ(bencode::B_INTEGER, test_handler.type());                        \
+    EXPECT_EQ((expect), test_handler.value().GetInteger());                    \
+  } while (0) //
 
 TEST(parse, int32) {
   TEST_INTEGER(0, "i0e");
+  TEST_INTEGER(-0, "i-0e");
   TEST_INTEGER(1234567890, "i1234567890e");
   TEST_INTEGER(-1234567890, "i-1234567890e");
   TEST_INTEGER(INT32_MAX, "i2147483647e");
@@ -138,22 +141,23 @@ TEST(parse, int32) {
 
 TEST(parse, int64) {
   TEST_INTEGER(0, "i0e");
+  TEST_INTEGER(-0, "i-0e");
   TEST_INTEGER(12345678901234, "i12345678901234e");
   TEST_INTEGER(-12345678901234, "i-12345678901234e");
   TEST_INTEGER(INT64_MAX, "i9223372036854775807e");
   TEST_INTEGER(INT64_MIN, "i-9223372036854775808e");
 }
 
-#define TEST_STRING(expect, b) \
-  do {                         \
-    std::string_view ss((b));  \
-    bencode::StringReadStream read_stream(ss); \
-    TestHandler test_handler;  \
-    ERROR_EQ(bencode::error::ParseError::OK, bencode::Reader::Parse(read_stream, test_handler)); \
-    EXPECT_EQ(bencode::B_STRING, test_handler.type());                                           \
-    EXPECT_STREQ((expect), test_handler.value().GetString().c_str());                            \
-  } while (0)                  \
-  //
+#define TEST_STRING(expect, b)                                                 \
+  do {                                                                         \
+    std::string_view ss((b));                                                  \
+    bencode::StringReadStream read_stream(ss);                                 \
+    TestHandler test_handler;                                                  \
+    ERROR_EQ(bencode::error::ParseError::OK,                                   \
+             bencode::Reader::Parse(read_stream, test_handler));               \
+    EXPECT_EQ(bencode::B_STRING, test_handler.type());                         \
+    EXPECT_STREQ((expect), test_handler.value().GetString().c_str());          \
+  } while (0) //
 
 TEST(parse, string) {
   TEST_STRING("", R"(0:)");
@@ -165,10 +169,9 @@ TEST(parse, list) {
     std::string_view ss("le");
     bencode::StringReadStream read_stream(ss);
     TestHandler test_handler;
-    EXPECT_STREQ(
-        bencode::ParseErrorStr(bencode::error::ParseError::OK),
-        bencode::ParseErrorStr(bencode::Reader::Parse(read_stream, test_handler))
-    );
+    EXPECT_STREQ(bencode::ParseErrorStr(bencode::error::ParseError::OK),
+                 bencode::ParseErrorStr(
+                     bencode::Reader::Parse(read_stream, test_handler)));
     EXPECT_EQ(bencode::B_LIST, test_handler.type());
     EXPECT_EQ(0UL, test_handler.value().GetList()->size());
   }
@@ -207,12 +210,14 @@ TEST(parse, dict) {
     std::string_view ss("de");
     bencode::StringReadStream read_stream(ss);
     TestHandler test_handler;
-    ERROR_EQ(bencode::error::ParseError::OK, bencode::Reader::Parse(read_stream, test_handler));
+    ERROR_EQ(bencode::error::ParseError::OK,
+             bencode::Reader::Parse(read_stream, test_handler));
     EXPECT_EQ(bencode::B_DICT, test_handler.type());
     EXPECT_EQ(0UL, test_handler.value().GetDict()->size());
   }
   {
-    std::string_view ss(R"(d1:ii123e1:s3:abc1:lli1ei2ei3ee1:dd1:1i1e1:2i2e1:3i3eee)");
+    std::string_view ss(
+        R"(d1:ii123e1:s3:abc1:lli1ei2ei3ee1:dd1:1i1e1:2i2e1:3i3eee)");
     bencode::Document doc;
     ERROR_EQ(bencode::error::ParseError::OK, doc.Parse(ss));
     EXPECT_EQ(bencode::B_DICT, doc.GetType());
@@ -251,22 +256,46 @@ TEST(parse, dict) {
   }
 }
 
-#define TEST_PARSE_ERROR(error, b) \
-  do {                             \
-  std::string_view ss((b));        \
-  bencode::StringReadStream read_stream(ss); \
-  TestHandler test_handler;        \
-  ERROR_EQ((error), bencode::Reader::Parse(read_stream, test_handler)); \
-  } while (0)                      \
-  //
+#define TEST_PARSE_ERROR(error, b)                                             \
+  do {                                                                         \
+    bencode::StringReadStream read_stream(b);                                  \
+    TestHandler test_handler;                                                  \
+    ERROR_EQ((error), bencode::Reader::Parse(read_stream, test_handler));      \
+  } while (0) //
+
+TEST(parse, bad_value) {
+  TEST_PARSE_ERROR(bencode::error::BAD_VALUE, "i-e");  // minus only
+  TEST_PARSE_ERROR(bencode::error::BAD_VALUE, "i-ae"); // minus and invalid
+}
 
 TEST(parse, expect_value) {
   TEST_PARSE_ERROR(bencode::error::EXPECT_VALUE, "");
 }
 
+TEST(parse, number_too_big) {
+  TEST_PARSE_ERROR(bencode::error::NUMBER_TOO_BIG,
+                   "i92233791812123120312116854775808e"); // positive overflow
+  TEST_PARSE_ERROR(bencode::error::NUMBER_TOO_BIG,
+                   "i-92233791812123120312116854775808e"); // negative overflow
+  TEST_PARSE_ERROR(
+      bencode::error::NUMBER_TOO_BIG,
+      "i-9223372036854775809e"); // overflow after conversion to signed
+}
+
 TEST(parse, miss_trailing_e) {
-  // invalid number
-  TEST_PARSE_ERROR(bencode::error::MISS_TRAILING_E, "i1.23e");
+  TEST_PARSE_ERROR(bencode::error::MISS_TRAILING_E, "i1.23e"); // invalid number
+  TEST_PARSE_ERROR(bencode::error::MISS_TRAILING_E, "i000123e"); // leading zero
+}
+
+TEST(parse, miss_key) {
+  TEST_PARSE_ERROR(bencode::error::MISS_KEY, "ddee");
+  TEST_PARSE_ERROR(bencode::error::MISS_KEY, "dlee");
+  TEST_PARSE_ERROR(bencode::error::MISS_KEY, "di1ee");
+}
+
+TEST(parse, miss_colon) {
+  TEST_PARSE_ERROR(bencode::error::MISS_COLON, "1");
+  TEST_PARSE_ERROR(bencode::error::MISS_COLON, "1a");
 }
 
 #if defined(__GNUC__) || (defined(_MSC_VER) && !defined(__clang__))
