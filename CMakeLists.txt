@@ -28,6 +28,7 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif ()
 
+option(BENCODE_BUILD_BENCHMARKS "Build bencode benchmarks." OFF)
 option(BENCODE_BUILD_EXAMPLES "Build bencode examples." OFF)
 option(BENCODE_BUILD_TESTS "Build bencode unittests." OFF)
 
@@ -125,9 +126,30 @@ endif ()
 # include bencode
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-#add extra search paths for libraries and includes
+# add extra search paths for libraries and includes
 SET(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "The directory the headers are installed in")
 SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE STRING "Directory where lib will install")
+
+# benchmarks
+if (BENCODE_BUILD_BENCHMARKS)
+    ExtProjectGit("https://github.com/google/benchmark.git" "v1.8.4" ${DEPS_ROOT} CMAKE_ARGS "-DBENCHMARK_DOWNLOAD_DEPENDENCIES=ON" "${_OPT_CMAKE_ARGS}")
+    add_library(google-benchmark IMPORTED STATIC GLOBAL)
+    add_dependencies(google-benchmark "google_benchmark.git")
+    set_target_properties(google-benchmark PROPERTIES
+            IMPORTED_LOCATION ${DEPS_ROOT}/lib/libbenchmark.a
+    )
+
+    enable_testing()
+    file(GLOB BENCHMARK_SRC_FILES ${PROJECT_SOURCE_DIR}/benchmark/*.cc)
+    foreach (_benchmark_file ${BENCHMARK_SRC_FILES})
+        get_filename_component(_benchmark_name ${_benchmark_file} NAME_WE)
+        add_executable(${_benchmark_name} ${_benchmark_file})
+        add_dependencies(${_benchmark_name} google-benchmark)
+        target_compile_definitions(${_benchmark_name} PRIVATE RESOURCES_DIR=\"${PROJECT_SOURCE_DIR}/benchmark/resources\")
+        target_include_directories(${_benchmark_name} PRIVATE "${DEPS_ROOT}/include")
+        target_link_libraries(${_benchmark_name} PRIVATE google-benchmark)
+    endforeach ()
+endif ()
 
 # example
 if (BENCODE_BUILD_EXAMPLES)
@@ -136,7 +158,8 @@ if (BENCODE_BUILD_EXAMPLES)
     foreach (_example_file ${EXAMPLE_SRC_FILES})
         get_filename_component(_example_name ${_example_file} NAME_WE)
         add_executable(${_example_name} ${_example_file})
-        add_dependencies(${_example_name} "neujson.git")
+        add_dependencies(${_example_name} "hominsu_neujson.git")
+        target_compile_definitions(${_example_name} PRIVATE RESOURCES_DIR=\"${PROJECT_SOURCE_DIR}/benchmark/resources\")
         target_include_directories(${_example_name} PRIVATE "${DEPS_ROOT}/include")
     endforeach ()
 endif ()
@@ -147,13 +170,13 @@ if (BENCODE_BUILD_TESTS)
         # required for VS2012 due to missing support for variadic templates
         add_definitions(-D_VARIADIC_MAX=10)
     endif (MSVC11)
-    ExtProjectGit("https://github.com/google/googletest.git" "v1.13.0" ${DEPS_ROOT} CMAKE_ARGS "${_OPT_CMAKE_ARGS}")
+    ExtProjectGit("https://github.com/google/googletest.git" "v1.14.0" ${DEPS_ROOT} CMAKE_ARGS "${_OPT_CMAKE_ARGS}")
     enable_testing()
     file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cc)
     foreach (_test_file ${TEST_SRC_FILES})
         get_filename_component(_test_name ${_test_file} NAME_WE)
         add_executable(${_test_name} ${_test_file})
-        add_dependencies(${_test_name} "googletest.git")
+        add_dependencies(${_test_name} "google_googletest.git")
         target_include_directories(${_test_name} PRIVATE "${DEPS_ROOT}/include")
         target_link_directories(${_test_name} PRIVATE "${DEPS_ROOT}/lib")
         target_link_libraries(${_test_name} gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})

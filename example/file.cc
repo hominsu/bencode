@@ -38,9 +38,9 @@ int main(const int argc, char *argv[]) {
 
 #if defined(_MSC_VER)
   std::FILE *input;
-  fopen_s(&input, "../../debian-11.6.0-amd64-DVD-1.iso.torrent", "r");
+  fopen_s(&input, RESOURCES_DIR"/debian-12.5.0-amd64-DVD-1.iso.torrent", "r");
 #else
-  std::FILE *input = fopen("../../debian-11.6.0-amd64-DVD-1.iso.torrent", "r");
+  std::FILE *input = fopen(RESOURCES_DIR"/debian-12.5.0-amd64-DVD-1.iso.torrent", "r");
 #endif
   if (input == nullptr) {
     exit(EXIT_FAILURE);

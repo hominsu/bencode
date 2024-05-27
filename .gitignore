@@ -11,6 +11,7 @@ cmake-build-*/
 **/*.vcxproj.*
 
 **/*.torrent
+!benchmark/resources/*.torrent
 **/*.DS_Store
 
 # Ignore all bazel-* symlinks. There is no full list since this can change
