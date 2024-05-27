@@ -97,7 +97,7 @@ concept HasAllRequiredFunctions =
 #undef VALUE
 #define VALUE(field, suffix)                                                   \
   field(NULL, std::monostate) suffix field(INTEGER, int64_t)                   \
-  suffix field(STRING, std::shared_ptr<std::vector<char>>)                     \
+  suffix field(STRING, std::shared_ptr<std::string>)                           \
       suffix field(LIST, std::shared_ptr<std::vector<Value>>)                  \
           suffix field(DICT, std::shared_ptr<std::vector<Member>>) //
 
@@ -142,7 +142,7 @@ public:
 private:
   friend class Document;
 
-  using String = std::vector<char>;
+  using String = std::string;
   using List = std::vector<Value>;
   using Dict = std::vector<Member>;
 
@@ -151,15 +151,15 @@ private:
 
 public:
   explicit Value(Type type = B_NULL);
-  explicit Value(B_INTEGER_TYPE i) : type_(B_INTEGER), data_(i) {};
+  explicit Value(B_INTEGER_TYPE i) : type_(B_INTEGER), data_(i) {}
   explicit Value(const char *s)
-      : type_(B_STRING), data_(std::make_shared<String>(s, s + strlen(s))) {};
+      : type_(B_STRING), data_(std::make_shared<String>(s, s + strlen(s))) {}
   explicit Value(const std::string_view sv)
-      : type_(B_STRING),
-        data_(std::make_shared<String>(sv.begin(), sv.end())) {};
+      : type_(B_STRING), data_(std::make_shared<String>(sv.begin(), sv.end())) {
+  }
   Value(const Value &value) = default;
   Value(Value &&value) noexcept
-      : type_(value.type_), data_(std::move(value.data_)) {};
+      : type_(value.type_), data_(std::move(value.data_)) {}
   ~Value() = default;
 
   [[nodiscard]] bool IsNull() const { return type_ == B_NULL; }
@@ -208,10 +208,10 @@ public:
 #undef VALUE
 
 struct Member {
-  Member(Value &&_key, Value &&_value)
-      : key_(std::move(_key)), value_(std::move(_value)) {}
-  Member(std::string_view _key, Value &&_value)
-      : key_(_key), value_(std::move(_value)) {}
+  Member(Value &&key, Value &&value)
+      : key_(std::move(key)), value_(std::move(value)) {}
+  Member(const std::string_view key, Value &&value)
+      : key_(key), value_(std::move(value)) {}
 
   Value key_;
   Value value_;
@@ -256,7 +256,7 @@ inline Value::B_INTEGER_TYPE Value::GetInteger() const {
 
 inline std::string_view Value::GetStringView() const {
   BENCODE_ASSERT(type_ == B_STRING);
-  auto s_ptr = std::get<B_STRING_TYPE>(data_).get();
+  const auto s_ptr = std::get<B_STRING_TYPE>(data_).get();
   return {s_ptr->data(), s_ptr->size()};
 }
 
@@ -324,7 +324,7 @@ inline Value::ConstMemberIterator Value::MemberEnd() const {
 }
 
 inline Value::ConstMemberIterator
-Value::FindMember(std::string_view key) const {
+Value::FindMember(const std::string_view key) const {
   BENCODE_ASSERT(type_ == B_DICT);
   return const_cast<Value &>(*this).FindMember(key);
 }
@@ -340,7 +340,6 @@ inline Value &Value::operator=(Value &&val) noexcept {
   BENCODE_ASSERT(this != &val);
   type_ = val.type_;
   data_ = std::move(val.data_);
-  val.type_ = B_NULL;
   return *this;
 }
 
@@ -350,14 +349,13 @@ inline Value &Value::operator[](const std::size_t index) {
 }
 
 inline const Value &Value::operator[](const std::size_t index) const {
-  BENCODE_ASSERT(type_ == B_LIST);
-  return std::get<B_LIST_TYPE>(data_)->at(index);
+  return const_cast<Value &>(*this)[index];
 }
 
 inline Value &Value::operator[](const std::string_view key) {
   BENCODE_ASSERT(type_ == B_DICT);
-  if (const auto it = FindMember(key);
-      it != std::get<B_DICT_TYPE>(data_)->end()) {
+  const auto end = std::get<B_DICT_TYPE>(data_)->end();
+  if (const auto it = FindMember(key); it != end) {
     return it->value_;
   }
   BENCODE_ASSERT(false && "value no found");
