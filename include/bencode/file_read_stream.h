@@ -30,7 +30,6 @@
 #include <cstdio>
 
 #include "bencode.h"
-#include "concepts.h"
 #include "non_copyable.h"
 
 namespace bencode {
@@ -76,9 +75,8 @@ public:
     read();
   }
 
-  template <concepts::PositiveNumber T = std::size_t>
-  [[nodiscard]] bool hasNext(T n = 1) const {
-    return !eof_ || (current_ + n - !eof_ <= buffer_last_);
+  [[nodiscard]] bool hasNext() const {
+    return !eof_ || (current_ + 1 - !eof_ <= buffer_last_);
   }
 
   [[nodiscard]] char peek() const { return *current_; }
@@ -89,14 +87,14 @@ public:
     return ch;
   }
 
-  template <concepts::PositiveNumber T> std::string next(T n) {
+  std::string next(const std::size_t n) {
     auto str = std::make_shared<std::string>();
-    auto ret = read<T>(str, n);
+    auto ret = read(str, n);
     return {ret->c_str(), ret->size()};
   }
 
-  template <concepts::GreaterEqualZeroNumber T> void skip(T n) {
-    for (T i = 0; i < n; ++i) {
+  void skip(const std::size_t n) {
+    for (std::size_t i = 0; i < n; ++i) {
       if (hasNext()) {
         read();
       } else {
@@ -129,9 +127,8 @@ private:
     }
   }
 
-  template <concepts::PositiveNumber T>
   std::shared_ptr<std::string> &read(std::shared_ptr<std::string> &str,
-                                     T n = 1) {
+                                     const std::size_t n = 1) {
     if (current_ + n <= buffer_last_) {
       str->append(current_, n);
       current_ += n;

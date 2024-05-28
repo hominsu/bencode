@@ -32,7 +32,7 @@ option(BENCODE_BUILD_BENCHMARKS "Build bencode benchmarks." OFF)
 option(BENCODE_BUILD_EXAMPLES "Build bencode examples." OFF)
 option(BENCODE_BUILD_TESTS "Build bencode unittests." OFF)
 
-option(BENCODE_ENABLE_INSTRUMENTATION_OPT "Build bencode with -march or -mcpu options" ON)
+option(BENCODE_ENABLE_INSTRUMENTATION_OPT "Build bencode with -march or -mcpu options" OFF)
 option(BENCODE_BUILD_ASAN "Build bencode with address sanitizer (gcc/clang)" OFF)
 option(BENCODE_BUILD_UBSAN "Build bencode with undefined behavior sanitizer (gcc/clang)" OFF)
 

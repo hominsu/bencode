@@ -30,7 +30,6 @@
 #include <string_view>
 
 #include "bencode.h"
-#include "concepts.h"
 #include "non_copyable.h"
 
 namespace bencode {
@@ -44,7 +43,7 @@ private:
   Iterator iter_;
 
 public:
-  explicit StringReadStream(std::string_view bencode)
+  explicit StringReadStream(const std::string_view bencode)
       : bencode_(bencode), iter_(bencode_.begin()) {}
 
   [[nodiscard]] bool hasNext() const { return iter_ != bencode_.end(); }
@@ -60,16 +59,16 @@ public:
     return '\0';
   }
 
-  template <concepts::PositiveNumber T> std::string_view next(T n) {
+  std::string_view next(const std::size_t n) {
     auto start = iter_;
-    if (std::distance(iter_, bencode_.end()) >= n) {
+    if (static_cast<std::size_t>(std::distance(iter_, bencode_.end())) >= n) {
       std::advance(iter_, n);
     }
     return {start, iter_};
   }
 
-  template <concepts::GreaterEqualZeroNumber T> void skip(T n) {
-    if (std::distance(iter_, bencode_.end()) >= n) {
+  void skip(const std::size_t n) {
+    if (static_cast<std::size_t>(std::distance(iter_, bencode_.end())) >= n) {
       std::advance(iter_, n);
     }
   }

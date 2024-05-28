@@ -56,6 +56,13 @@ concept HasNext = requires(ReadStream rs) {
 };
 
 template <typename ReadStream>
+concept HasNextWithLength = requires(ReadStream rs, std::size_t n) {
+  { rs.next(n) } -> std::same_as<std::string>;
+} || requires(ReadStream rs, std::size_t n) {
+  { rs.next(n) } -> std::same_as<std::string_view>;
+};
+
+template <typename ReadStream>
 concept HasAssertNext = requires(ReadStream rs, char ch) {
   { rs.assertNext(ch) } -> std::same_as<void>;
 };
@@ -65,7 +72,7 @@ concept HasAssertNext = requires(ReadStream rs, char ch) {
 template <typename T>
 concept HasAllRequiredFunctions =
     details::HasHasNext<T> && details::HasPeek<T> && details::HasNext<T> &&
-    details::HasAssertNext<T>;
+    details::HasNextWithLength<T> && details::HasAssertNext<T>;
 
 } // namespace required::read_stream
 
